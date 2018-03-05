@@ -182,7 +182,7 @@ public class RoutePointDrawer : Editor
         var next = pos;
         var handlesize = HandleUtility.GetHandleSize(next);
 
-#if UNITY_4
+#if UNITY_4_6
         Handles.color = kRightArrowColor;
         next = Handles.Slider(next, Vector3.right, handlesize, Handles.ArrowCap, 1);
         Handles.color = kForwardArrowColor;
