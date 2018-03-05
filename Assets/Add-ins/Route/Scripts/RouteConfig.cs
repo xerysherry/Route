@@ -20,14 +20,6 @@ public class RouteConfig : MonoBehaviour
 	}
 
 #if UNITY_EDITOR
-    //void Update () 
-    //{
-    ////禁止移动，旋转，缩放
-    //transform.position = Vector3.zero;
-    //transform.eulerAngles = Vector3.zero;
-    //transform.localScale = Vector3.one;
-    //}
-
     void DrawCurve(Bezier3D bezier, Quaternion rot, 
                 RoutePoint pt0, RoutePoint pt1)
     {
@@ -162,7 +154,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     public void RefreshLength()
     {
-        if(points.Length == 0)
+        if(points_.Length == 0)
             return;
 
         if(loop)
@@ -186,6 +178,13 @@ public class RouteConfig : MonoBehaviour
             total_length_ += length_[i];
         }
     }
+    /// <summary>
+    /// 设置是否闭环
+    /// </summary>
+    public void SetLoop(bool value)
+    {
+        loop = value;
+    }
 #endif
 
     public void Refresh()
@@ -197,6 +196,10 @@ public class RouteConfig : MonoBehaviour
         RefreshLength();
 #endif
     }
+    /// <summary>
+    /// 是否为闭环
+    /// </summary>
+    public bool IsLoop { get { return loop; } }
 
     public RoutePoint[] points { get { return points_; } }
     RoutePoint[] points_;
@@ -226,7 +229,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     [HideInInspector]
     [SerializeField]
-    public bool loop = false;
+    private bool loop = false;
     /// <summary>
     /// 路径间长度缓存数据
     /// </summary>

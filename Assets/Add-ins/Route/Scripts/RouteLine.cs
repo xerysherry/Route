@@ -110,7 +110,7 @@ public class RouteLine : MonoBehaviour
         var iv = interval;
         if(self_adjust)
         {
-            if(route.loop)
+            if(route.IsLoop)
                 iv = (totallength - scount * (step + interval)) / scount + interval;
             else
                 iv = (totallength + interval - scount * (step + interval)) / scount + interval;
@@ -183,7 +183,7 @@ public class RouteLine : MonoBehaviour
             triangles.RemoveRange(vi / 4 * 6, 6);
         }
 
-        if(route.loop && interval == 0.0f)
+        if(route.IsLoop && interval == 0.0f)
         {
             vertices[vertices.Count - 2] = vertices[0];
             vertices[vertices.Count - 1] = vertices[1];

@@ -50,20 +50,22 @@ public class RouteConfigDrawer : Editor
             if(self.points.Length > 0)
                 Select(self.points[self.points.Length - 1]);
         }
-        if(!self.loop)
+        if(!self.IsLoop)
         {
             if(GUILayout.Button("Unloop(非闭环模式)"))
             {
-                self.loop = true;
+                self.SetLoop(true);
                 self.Refresh();
+                SceneView.RepaintAll();
             }
         }
         else
         {
             if(GUILayout.Button("Loop(闭环模式)"))
             {
-                self.loop = false;
+                self.SetLoop(false);
                 self.Refresh();
+                SceneView.RepaintAll();
             }
         }
 
@@ -214,13 +216,13 @@ public class RoutePointDrawer : Editor
             if(c != null)
                 RouteConfigDrawer.Select(c);
         }
-        if(GUILayout.Button("Next Route(下一个路点)"))
+        if(GUILayout.Button("Prev Route(下一个路点)"))
         {
             var c = point.GetConfig();
             if(c != null)
             {
                 int i = c.points.Length - 1;
-                for(; i > 0; ++i)
+                for(; i > 0; --i)
                 {
                     if(c.points[i] == point)
                         break;
@@ -229,7 +231,7 @@ public class RoutePointDrawer : Editor
                     RouteConfigDrawer.Select(c.points[i - 1]);
             }
         }
-        if(GUILayout.Button("Prev Route(上一个路点)"))
+        if(GUILayout.Button("Next Route(上一个路点)"))
         {
             var c = point.GetConfig();
             if(c != null)
