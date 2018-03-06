@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -156,7 +156,7 @@ public class TrunkConfig : MonoBehaviour
 
 #endif
     /// <summary>
-    /// ÖØĞÂÉèÖÃÂ·µã
+    /// é‡æ–°è®¾ç½®è·¯ç‚¹
     /// </summary>
     public void RefreshDijkstra()
     {
@@ -175,10 +175,10 @@ public class TrunkConfig : MonoBehaviour
         }
     }
     /// <summary>
-    /// »ñµÃÂ·¾¶µã
+    /// è·å¾—è·¯å¾„ç‚¹
     /// </summary>
-    /// <param name="start">ÆğÊ¼µã</param>
-    /// <param name="end">ÖÕ½áµã</param>
+    /// <param name="start">èµ·å§‹ç‚¹</param>
+    /// <param name="end">ç»ˆç»“ç‚¹</param>
     /// <returns></returns>
     public List<TrunkPoint> GetPath(TrunkPoint start, TrunkPoint end)
     {
@@ -195,11 +195,11 @@ public class TrunkConfig : MonoBehaviour
     }
 
     /// <summary>
-    /// Ñ°Â·Ëã·¨Àà
+    /// å¯»è·¯ç®—æ³•ç±»
     /// </summary>
     Dijkstra<TrunkPoint> dijkstra_ = new Dijkstra<TrunkPoint>();
     /// <summary>
-    /// Â·¾¶½á¹û
+    /// è·¯å¾„ç»“æœ
     /// </summary>
     Dictionary<TrunkPoint, Dijkstra<TrunkPoint>.Result> results_ = 
                         new Dictionary<TrunkPoint,Dijkstra<TrunkPoint>.Result>();

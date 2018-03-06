@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using System.Collections;
 
 [ExecuteInEditMode]
-[AddComponentMenu("CameraRoute/RoutePoint")]
+[AddComponentMenu("Route/RoutePoint")]
 public class RoutePoint : MonoBehaviour
 {
     static readonly float kDistanceLine = 1.5f;
@@ -47,8 +50,6 @@ public class RoutePoint : MonoBehaviour
         if(next_weight_point == Vector3.zero)
             return;
 
-        Gizmos.color = color;
-
         Quaternion rot = new Quaternion();
         RouteConfig config = GetConfig();
         if(config)
@@ -65,7 +66,52 @@ public class RoutePoint : MonoBehaviour
         //Gizmos.DrawFrustum(transform.position, 15, 0, 1, 1.2f);
         //Gizmos.matrix = oldmx;
 
-        Gizmos.DrawRay(transform.position + Vector3.zero, rot * next_weight_point.normalized*10);
+        Gizmos.color = color;
+
+        var next_axis = rot * next_weight_point.normalized;
+        var next_point = transform.position + rot * next_weight_point;
+        Gizmos.DrawLine(transform.position, next_point);
+        DrawArrow(next_axis, next_point);
+
+        var prev_axis = rot * prev_weight_point.normalized;
+        var prev_point = transform.position + rot * prev_weight_point;
+        Gizmos.DrawLine(transform.position, prev_point);
+        DrawArrow(-prev_axis, prev_point - prev_weight_point.normalized * 0.3f);
+    }
+
+    void DrawArrow(Vector3 axis, Vector3 point)
+    {
+        var p = Vector3.zero;
+        if(Mathf.Abs(axis.x) < 0.0001f &&
+            Mathf.Abs(axis.y) == 1 &&
+            Mathf.Abs(axis.z) < 0.0001f)
+            p = Vector3.Cross(axis, Vector3.right).normalized;
+        else
+            p = Vector3.Cross(axis, Vector3.up).normalized;
+        p = p * 0.1f;
+
+        var t = point - axis * 0.3f;
+        var a1 = Vector3.zero;
+        var a2 = Vector3.zero;
+        var la1 = t;
+        var la2 = t;
+        for(int i = 0; i < 5; ++i)
+        {
+            var q = Quaternion.AngleAxis(360 / (5 * 2) * i, axis) * p;
+            a1 = t + q;
+            Gizmos.DrawLine(t, a1);
+            Gizmos.DrawLine(a1, point);
+            Gizmos.DrawLine(a1, la1);
+            la1 = a1;
+
+            a2 = t - q;
+            Gizmos.DrawLine(t, a2);
+            Gizmos.DrawLine(a2, point);
+            Gizmos.DrawLine(a2, la2);
+            la2 = a2;
+        }
+        Gizmos.DrawLine(a1, t - p);
+        Gizmos.DrawLine(a2, t + p);
     }
 
     static readonly Color[] color_array = new Color[]

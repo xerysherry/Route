@@ -1,10 +1,10 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 public class Dijkstra<T>
 {
     /// <summary>
-    /// ½á¹û
+    /// ç»“æœ
     /// </summary>
     public class Result
     {
@@ -28,17 +28,17 @@ public class Dijkstra<T>
         }
 
         /// <summary>
-        /// Â·¾¶Á¬½Óµã
+        /// è·¯å¾„è¿æ¥ç‚¹
         /// </summary>
         public Dictionary<T, T> road;
         /// <summary>
-        /// ×Ü¾àÀë
+        /// æ€»è·ç¦»
         /// </summary>
         public Dictionary<T, float> dist;
     }
 
     /// <summary>
-    /// Ìí¼Óµã
+    /// æ·»åŠ ç‚¹
     /// </summary>
     public void Add(T point)
     {
@@ -46,7 +46,7 @@ public class Dijkstra<T>
         graph_[point] = new Dictionary<T, float>();
     }
     /// <summary>
-    /// Ìí¼Óµã¼¯ºÏ
+    /// æ·»åŠ ç‚¹é›†åˆ
     /// </summary>
     public void Add(IEnumerable<T> points)
     {
@@ -61,12 +61,12 @@ public class Dijkstra<T>
     }
 
     /// <summary>
-    /// ÉèÖÃµãÓëµãÖ®¼ä¾àÀë
+    /// è®¾ç½®ç‚¹ä¸ç‚¹ä¹‹é—´è·ç¦»
     /// </summary>
-    /// <param name="start_point">Æğµã</param>
-    /// <param name="end_point">ÖÕµã</param>
-    /// <param name="dist">¾àÀë</param>
-    /// <param name="oneway">ÊÇ·ñÎªµ¥Ïò</param>
+    /// <param name="start_point">èµ·ç‚¹</param>
+    /// <param name="end_point">ç»ˆç‚¹</param>
+    /// <param name="dist">è·ç¦»</param>
+    /// <param name="oneway">æ˜¯å¦ä¸ºå•å‘</param>
     public void SetDist(T start_point, T end_point, float dist, bool oneway)
     {
         if(!points_.Contains(start_point))
@@ -77,7 +77,7 @@ public class Dijkstra<T>
     }
 
     /// <summary>
-    /// ÕÒÑ°×î¶Ì¾àÀëµã
+    /// æ‰¾å¯»æœ€çŸ­è·ç¦»ç‚¹
     /// </summary>
     /// <param name="queue"></param>
     /// <param name="dist"></param>
@@ -98,7 +98,7 @@ public class Dijkstra<T>
         return point;
     }
     /// <summary>
-    /// »ñµÃµãÓëµãµÄ¾àÀë£¬¸ºÖµ±íÊ¾ÎŞÁ¬½Ó
+    /// è·å¾—ç‚¹ä¸ç‚¹çš„è·ç¦»ï¼Œè´Ÿå€¼è¡¨ç¤ºæ— è¿æ¥
     /// </summary>
     /// <param name="start_point"></param>
     /// <param name="end_point"></param>
@@ -112,7 +112,7 @@ public class Dijkstra<T>
         return -1;
     }
     /// <summary>
-    /// ¼ÆÁ¿Â·¾¶µã
+    /// è®¡é‡è·¯å¾„ç‚¹
     /// </summary>
     /// <param name="start_point"></param>
     /// <returns></returns>
@@ -137,10 +137,10 @@ public class Dijkstra<T>
         {
             var p = FindMinPoint(queue, dist);
             if(p == null)
-                //Ê£ÏÂ¹ÂÁ¢µã
+                //å‰©ä¸‹å­¤ç«‹ç‚¹
                 break;
 
-            //ÒÆ³ıµã
+            //ç§»é™¤ç‚¹
             queue.Remove(p);
             foreach(var pp in points_)
             {
@@ -159,11 +159,11 @@ public class Dijkstra<T>
     }
 
     /// <summary>
-    /// µã¼¯
+    /// ç‚¹é›†
     /// </summary>
     HashSet<T> points_ = new HashSet<T>();
     /// <summary>
-    /// µãÓëµãÖ®¼ä¾àÀë¶ÔÕÕ±í(µ¥Ïò)
+    /// ç‚¹ä¸ç‚¹ä¹‹é—´è·ç¦»å¯¹ç…§è¡¨(å•å‘)
     /// </summary>
     Dictionary<T, Dictionary<T, float>> graph_ = 
         new Dictionary<T,Dictionary<T,float>>();

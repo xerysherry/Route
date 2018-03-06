@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -169,7 +169,7 @@ public class TrunkPoint : MonoBehaviour
     };
 
     /// <summary>
-    /// ´´½¨»òÕß»ñµÃÌØÊâÂ·¾¶£¨·ÇÔËĞĞÆÚº¯Êı£©
+    /// åˆ›å»ºæˆ–è€…è·å¾—ç‰¹æ®Šè·¯å¾„ï¼ˆéè¿è¡ŒæœŸå‡½æ•°ï¼‰
     /// </summary>
     /// <param name="next"></param>
     public RouteConfig RouteBuildOrGet(TrunkPoint next)
@@ -191,7 +191,7 @@ public class TrunkPoint : MonoBehaviour
             return config;
         }
 
-        //´´½¨Â·¾¶
+        //åˆ›å»ºè·¯å¾„
         GameObject o = new GameObject(name + "<->" + next.name);
         config = o.AddComponent<RouteConfig>();
         ArrayUtility.Add(ref configs, config);
@@ -225,7 +225,7 @@ public class TrunkPoint : MonoBehaviour
     }
 
     /// <summary>
-    /// É¾³ıÂ·¾¶
+    /// åˆ é™¤è·¯å¾„
     /// </summary>
     /// <param name="next"></param>
     public void RouteDelete(TrunkPoint next)
@@ -253,11 +253,11 @@ public class TrunkPoint : MonoBehaviour
         if(!battle_route)
             battle_route = null;
 
-        //·¢ÏÖÎŞĞ§µã
+        //å‘ç°æ— æ•ˆç‚¹
         foreach(var p in points)
         {
             if(p == null)
-                //·¢ÏÖÎŞĞ§µã
+                //å‘ç°æ— æ•ˆç‚¹
                 goto DO_VALID;
         }
         return;
@@ -273,7 +273,7 @@ DO_VALID:
     }
 
     /// <summary>
-    /// Õ½³¡Â·µã´´½¨»ñÈ¡
+    /// æˆ˜åœºè·¯ç‚¹åˆ›å»ºè·å–
     /// </summary>
     public RouteConfig BattleRouteBuildOrGet()
     {
@@ -283,7 +283,7 @@ DO_VALID:
             return battle_route;
         }
 
-        //´´½¨Â·¾¶
+        //åˆ›å»ºè·¯å¾„
         GameObject o = new GameObject("battlefield");
         battle_route = o.AddComponent<RouteConfig>();
 
@@ -305,7 +305,7 @@ DO_VALID:
         trunk_route.Clear();
         trunk_prev_route.Clear();
 
-        //ÉèÖÃÖ÷¶¯Â·¾¶
+        //è®¾ç½®ä¸»åŠ¨è·¯å¾„
         foreach(var c in configs)
         {
             c.gameObject.SetActive(true);
@@ -322,7 +322,7 @@ DO_VALID:
                     trunk_route[tp] = c;
             }
         }
-        //ÉèÖÃ±»¶¯Â·¾¶
+        //è®¾ç½®è¢«åŠ¨è·¯å¾„
         foreach(var c in prev_configs)
         {
             trunk_prev_route[c.transform.parent.GetComponent<TrunkPoint>()] = c;
@@ -344,15 +344,15 @@ DO_VALID:
     }
 
     ///// <summary>
-    ///// ÏûÏ¢Ãû
+    ///// æ¶ˆæ¯å
     ///// </summary>
     //public string message = "";
     /// <summary>
-    /// ÑÕÉ«
+    /// é¢œè‰²
     /// </summary>
     public Color color = Color.green;
     /// <summary>
-    /// ¿ìËÙÉèÖÃ
+    /// å¿«é€Ÿè®¾ç½®
     /// </summary>
     public enum ColorSet
     {
@@ -370,37 +370,37 @@ DO_VALID:
     public ColorSet colorset;
 
     /// <summary>
-    /// ¹ØÁª·ÖÖ§µã
+    /// å…³è”åˆ†æ”¯ç‚¹
     /// </summary>
     [SerializeField]
     [HideInInspector]
     public TrunkPoint[] points = new TrunkPoint[0];
     /// <summary>
-    /// Ö÷¶¯Â·¾¶
+    /// ä¸»åŠ¨è·¯å¾„
     /// </summary>
     [SerializeField]
     //[HideInInspector]
     public RouteConfig[] configs = new RouteConfig[0];
     /// <summary>
-    /// ±»¶¯Â·¾¶
+    /// è¢«åŠ¨è·¯å¾„
     /// </summary>
     [SerializeField]
     //[HideInInspector]
     public RouteConfig[] prev_configs = new RouteConfig[0];
 
     /// <summary>
-    /// Õ½³¡Â·¾¶µã
+    /// æˆ˜åœºè·¯å¾„ç‚¹
     /// </summary>
     [SerializeField]
     //[HideInInspector]
     public RouteConfig battle_route = null;
 
     /// <summary>
-    /// ·ÖÖ§µã¶ÔÓ¦ÓÚÂ·¾¶
+    /// åˆ†æ”¯ç‚¹å¯¹åº”äºè·¯å¾„
     /// </summary>
     Dictionary<TrunkPoint, RouteConfig> trunk_route = new Dictionary<TrunkPoint, RouteConfig>();
     /// <summary>
-    /// ·ÖÖ§¶ÔÓ¦ÓÚ±»¶¯Â·¾¶
+    /// åˆ†æ”¯å¯¹åº”äºè¢«åŠ¨è·¯å¾„
     /// </summary>
     Dictionary<TrunkPoint, RouteConfig> trunk_prev_route = new Dictionary<TrunkPoint, RouteConfig>();
 }

@@ -128,6 +128,7 @@ public class RoutePointDrawer : Editor
     static readonly Color kRightArrowColor = new Color(1, 0.2f, 0.2f);
     static readonly Color kForwardArrowColor = new Color(0.2f, 0.2f, 1);
     static readonly Color kUpArrowColor = new Color(0.2f, 1, 0.2f);
+    static readonly Color kDirectionArrowColor = new Color(1, 1, 0.2f);
     static bool show_arrow_ = false;
 
     public void OnSceneGUI()
@@ -145,8 +146,6 @@ public class RoutePointDrawer : Editor
         }
         GUI.Window(1, new Rect(5, 20, 200, 210), TestWindow, "Point Config(路点配置窗口)");
 
-        //Quaternion rot = point.transform.rotation;
-        //Quaternion irot = Quaternion.Inverse(rot);
         Quaternion rot = new Quaternion();
         Quaternion irot = new Quaternion();
         RouteConfig config = point.GetConfig();
@@ -166,12 +165,30 @@ public class RoutePointDrawer : Editor
             point.next_weight_point = irot * (next_weight_point - point.transform.position);
             if(point.weight_type_ == RoutePoint.WeightType.kNormal)
                 point.prev_weight_point = -point.next_weight_point.normalized * point.prev_weight_point.magnitude;
+            old_next_weight_point = next_weight_point;
         }
         if(old_prev_weight_point != prev_weight_point)
         {
             point.prev_weight_point = irot * (prev_weight_point - point.transform.position);
             if(point.weight_type_ == RoutePoint.WeightType.kNormal)
                 point.next_weight_point = -point.prev_weight_point.normalized * point.next_weight_point.magnitude;
+            old_prev_weight_point = prev_weight_point;
+        }
+
+        var dir1 = rot * point.next_weight_point;
+        next_weight_point = HandleDirection(old_next_weight_point, dir1.normalized);
+        var dir2 = rot * point.prev_weight_point;
+        prev_weight_point = HandleDirection(old_prev_weight_point, dir2.normalized);
+
+        if(old_next_weight_point != next_weight_point)
+        {
+            point.next_weight_point = point.next_weight_point.normalized * 
+                (next_weight_point - point.transform.position).magnitude;
+        }
+        if(old_prev_weight_point != prev_weight_point)
+        {
+            point.prev_weight_point = point.prev_weight_point.normalized *
+                (prev_weight_point - point.transform.position).magnitude;
         }
 
         Handles.color = Color.red;
@@ -201,6 +218,17 @@ public class RoutePointDrawer : Editor
 #endif
         Handles.Label(next, name);
         return next;
+    }
+
+    Vector3 HandleDirection(Vector3 pos, Vector3 dir)
+    {
+#if UNITY_4_6
+        Handles.color = kDirectionArrowColor;
+        return Handles.Slider(pos, dir, HandleUtility.GetHandleSize(pos), Handles.ArrowCap, 1);
+#else // UNITY_5 || NITY_2017
+        Handles.color = kDirectionArrowColor;
+        return Handles.Slider(pos, dir, HandleUtility.GetHandleSize(pos), Handles.ArrowHandleCap, 1);
+#endif
     }
 
     void TestWindow(int id)
