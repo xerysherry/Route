@@ -71,7 +71,7 @@ public class RouteConfigDrawer : Editor
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Total Length(总长度):");
-        GUILayout.Label(self.total_length_.ToString());
+        GUILayout.Label(self.total_length.ToString());
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();

@@ -282,6 +282,20 @@ public class RouteController
             vel = route_config_.velocity;
         return vel;
     }
+    /// <summary>
+    /// 下一节点速度
+    /// </summary>
+    /// <returns></returns>
+    public float GetNextVelocity()
+    {
+        var next = next_point;
+        if(next == null)
+            return GetCurrenVelocity();
+        float vel = next.velocity;
+        if(vel <= 0.0f)
+            vel = route_config_.velocity;
+        return vel;
+    }
 
     public void SetCurrent(int cur)
     {

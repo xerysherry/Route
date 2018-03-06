@@ -105,7 +105,7 @@ public class RouteConfig : MonoBehaviour
             {
                 DrawCurve(bezier, rot, points_[i], points_[i + 1]);
             }
-            if(loop)
+            if(loop_)
                 DrawCurve(bezier, rot, points_[i], points_[0]);
         }
     }
@@ -157,11 +157,11 @@ public class RouteConfig : MonoBehaviour
         if(points_.Length == 0)
             return;
 
-        if(loop)
-            length_ = new float[points_.Length];
+        if(loop_)
+            length = new float[points_.Length];
         else
-            length_ = new float[points_.Length - 1];
-        total_length_ = 0;
+            length = new float[points_.Length - 1];
+        total_length = 0;
 
         Bezier3D bezier = new Bezier3D();
         Quaternion rot = transform.rotation;
@@ -169,13 +169,13 @@ public class RouteConfig : MonoBehaviour
         int i = 0;
         for(; i < points_.Length - 1; ++i)
         {
-            length_[i] = RefreshLength(bezier, rot, points_[i], points_[i + 1]);
-            total_length_ += length_[i];
+            length[i] = RefreshLength(bezier, rot, points_[i], points_[i + 1]);
+            total_length += length[i];
         }
-        if(loop)
+        if(loop_)
         {
-            length_[i] = RefreshLength(bezier, rot, points_[i], points_[0]);
-            total_length_ += length_[i];
+            length[i] = RefreshLength(bezier, rot, points_[i], points_[0]);
+            total_length += length[i];
         }
     }
     /// <summary>
@@ -183,7 +183,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     public void SetLoop(bool value)
     {
-        loop = value;
+        loop_ = value;
     }
 #endif
 
@@ -191,7 +191,7 @@ public class RouteConfig : MonoBehaviour
     {
         //获得路点信息
         points_ = GetComponentsInChildren<RoutePoint>();
-
+        beziers_ = new RouteMath.Bezier3D[points_.Length];
 #if UNITY_EDITOR
         RefreshLength();
 #endif
@@ -199,10 +199,11 @@ public class RouteConfig : MonoBehaviour
     /// <summary>
     /// 是否为闭环
     /// </summary>
-    public bool IsLoop { get { return loop; } }
+    public bool IsLoop { get { return loop_; } }
 
     public RoutePoint[] points { get { return points_; } }
     RoutePoint[] points_;
+    Bezier3D[] beziers_;
 
     public RoutePoint this[int index] 
     { 
@@ -229,19 +230,19 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     [HideInInspector]
     [SerializeField]
-    private bool loop = false;
+    private bool loop_ = false;
     /// <summary>
     /// 路径间长度缓存数据
     /// </summary>
     [HideInInspector]
     [SerializeField]
-    public float[] length_;
+    public float[] length;
     /// <summary>
     /// 总长度
     /// </summary>
     [HideInInspector]
     [SerializeField]
-    public float total_length_;
+    public float total_length;
 
     /// <summary>
     /// 通过总长度设置对应点，并获得标准量
@@ -252,15 +253,15 @@ public class RouteConfig : MonoBehaviour
     {
         if(dist < 0)
             dist = 0;
-        else if(dist > total_length_)
-            dist = total_length_;
+        else if(dist > total_length)
+            dist = total_length;
 
-        int count = length_.Length;
+        int count = length.Length;
         int curr = 0;
         float movelength = 0;
         for(; curr < count; ++curr)
         {
-            var l = length_[curr];
+            var l = length[curr];
             if(dist < l)
             {
                 movelength = dist;
@@ -288,7 +289,54 @@ public class RouteConfig : MonoBehaviour
     /// <returns></returns>
     public Vector3 GetPointByTotalPrecent(float precent)
     {
-        return GetPointByTotalLength(precent * total_length_);
+        return GetPointByTotalLength(precent * total_length);
+    }
+
+    /// <summary>
+    /// 获取曲线类
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public Bezier3D GetBezier3D(int index)
+    {
+        if(index < 0)
+            index = 0;
+        if(loop_)
+        {
+            if(index > points_.Length - 1)
+                index = points_.Length - 1;
+        }
+        else
+        {
+            if(index > points_.Length - 2)
+                index = points_.Length - 2;
+        }
+
+        Bezier3D b = beziers_[index];
+        if(b == null)
+        {
+            Quaternion rot = transform.rotation;
+            RoutePoint pt0 = null, pt1 = null;
+            if(index < points_.Length - 1)
+            {
+                pt0 = points_[index];
+                pt1 = points_[index + 1];
+            }
+            else
+            {
+                pt0 = points_[index];
+                pt1 = points_[0];
+            }
+
+            var p0 = pt0.transform.position;
+            var p1 = p0 + rot * pt0.next_weight_point;
+            var p3 = pt1.transform.position;
+            var p2 = p3 + rot * pt1.prev_weight_point;
+
+            b = new Bezier3D(p0, p1, p2, p3);
+            beziers_[index] = b;
+        }
+        return b;
     }
 
     /// <summary>
@@ -298,7 +346,7 @@ public class RouteConfig : MonoBehaviour
     {
         if(current < 0)
             current = 0;
-        if(loop)
+        if(loop_)
         {
             if(current > points_.Length - 1)
                 current = points_.Length - 1;
@@ -337,7 +385,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     public void Next()
     {
-        if(loop)
+        if(loop_)
             SetCurrent((current + 1) % points_.Length);
         else
             SetCurrent(current + 1);
@@ -347,7 +395,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     public void Prev()
     {
-        if(loop)
+        if(loop_)
             SetCurrent((current - 1 + points_.Length) % points_.Length);
         else
             SetCurrent(current - 1);
@@ -376,7 +424,7 @@ public class RouteConfig : MonoBehaviour
             return false;
         else if(l == 1)
             return true;
-        else if(loop)
+        else if(loop_)
             return current == l - 1;
         else
             return current == l - 2;
@@ -390,7 +438,7 @@ public class RouteConfig : MonoBehaviour
     public float GetNormalizedT(float move)
     {
         if(current_ >= points_.Length ||
-            current_ >= length_.Length)
+            current_ >= length.Length)
             return 0;
         if(current_point.steps_.Length == 0)
         {
@@ -454,13 +502,25 @@ public class RouteConfig : MonoBehaviour
             return points_[current_]; 
         } 
     }
-
+    /// <summary>
+    /// 下一个点
+    /// </summary>
     public RoutePoint next_point
     {
         get
         {
-            if(current_ + 1 < 0 || current_ + 1 > points_.Length - 1)
+            if(current_ + 1 < 0)
                 return null;
+            if(loop_)
+            {
+                if(current_ + 1 > points.Length - 1)
+                    return points_[0];
+            }
+            else
+            {
+                if(current_ + 1 > points_.Length - 1)
+                    return null;
+            }
             return points_[current_ + 1];
         }
     }
@@ -469,9 +529,9 @@ public class RouteConfig : MonoBehaviour
     {
         get 
         {
-            if(current_ < 0 || current_ >= length_.Length)
+            if(current_ < 0 || current_ >= length.Length)
                 return 0;
-            return length_[current_]; 
+            return length[current_]; 
         } 
     }
     /// <summary>
@@ -495,5 +555,4 @@ public class RouteConfig : MonoBehaviour
     float microstep { get { return step_length / kStepParts; } }
 
     Bezier3D bezier_ = new Bezier3D();
-    
 }
