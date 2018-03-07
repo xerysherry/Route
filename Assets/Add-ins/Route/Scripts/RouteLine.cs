@@ -150,6 +150,9 @@ public class RouteLine : MonoBehaviour
             while(subdist > route.current_length)
             {
                 subdist -= route.current_length;
+                Debug.Log(vi);
+                Debug.Log(route.current);
+                Debug.Log(route.IsTail());
                 if(route.IsTail())
                     goto EXIT;
                 route.Next();

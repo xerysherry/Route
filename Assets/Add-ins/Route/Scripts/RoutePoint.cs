@@ -9,6 +9,7 @@ using System.Collections;
 public class RoutePoint : MonoBehaviour
 {
     static readonly float kDistanceLine = 1.5f;
+    static readonly float kPointSize = 0.31f;
 
 #if UNITY_EDITOR
     void Update()
@@ -38,7 +39,7 @@ public class RoutePoint : MonoBehaviour
 
     void DrawPoint(Color color)
     {
-        float r = transform.localScale.x * 0.5f;
+        float r = transform.localScale.x * kPointSize;
         Gizmos.color = color;
         Gizmos.DrawSphere(transform.position, r);
         Gizmos.color = Color.white;
@@ -55,19 +56,7 @@ public class RoutePoint : MonoBehaviour
         if(config)
             rot = config.transform.rotation;
 
-        //Vector3 direction = new Vector3(kDistanceLine, 0, 0);
-        //direction = rot * direction;
-
-        //var oldmx = Gizmos.matrix;
-        ////Gizmos.matrix = Gizmos.matrix * Matrix4x4.TRS(
-        ////    transform.position + rot * next_weight_point.normalized * kDistanceLine * transform.localScale.x,  
-        ////    rot * Quaternion.LookRotation(next_weight_point) * Quaternion.AngleAxis(0, new Vector3(0, 1, 0)),
-        ////    transform.localScale);
-        //Gizmos.DrawFrustum(transform.position, 15, 0, 1, 1.2f);
-        //Gizmos.matrix = oldmx;
-
         Gizmos.color = color;
-
         var next_axis = rot * next_weight_point.normalized;
         var next_point = transform.position + rot * next_weight_point;
         Gizmos.DrawLine(transform.position, next_point);

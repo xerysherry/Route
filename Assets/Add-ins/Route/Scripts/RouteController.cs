@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 public class RouteController
@@ -59,13 +60,6 @@ public class RouteController
 			route_config_ = null;
         }
         move_length_ = 0;
-    }
-    /// <summary>
-    /// 销毁数据
-    /// </summary>
-    public void Destroy()
-    {
-        Clear();
     }
 
     public void Update(float dt)
@@ -361,22 +355,40 @@ public class RouteController
         }
     }
     
-    /// <summary>
-    /// 当前序号
-    /// </summary>
-    public int current { get { return route_config_.current; } }
-    /// <summary>
-    /// 当前路点
-    /// </summary>
-    public RoutePoint current_point { get { return route_config_.current_point; } }
-    /// <summary>
-    /// 加一个点
-    /// </summary>
-    public RoutePoint next_point { get { return route_config_.next_point; } }
-    /// <summary>
-    /// 当前长度
-    /// </summary>
-    public float current_length { get { return route_config_.current_length; } }
+    ///// <summary>
+    ///// 当前序号
+    ///// </summary>
+    //public int current { get { return route_config_.current; } }
+    ///// <summary>
+    ///// 当前路点
+    ///// </summary>
+    //public RoutePoint current_point { get { return route_config_.current_point; } }
+    ///// <summary>
+    ///// 加一个点
+    ///// </summary>
+    //public RoutePoint next_point { get { return route_config_.next_point; } }
+    ///// <summary>
+    ///// 当前长度
+    ///// </summary>
+    //public float current_length { get { return route_config_.current_length; } }
+
+
+    public int current { get { return current_; } }
+    int current_ = 0;
+
+    public RoutePoint current_point { get { return route_config_[current_]; } }
+    public RoutePoint next_point 
+    {
+        get
+        {
+            if(route_config_.IsLoop)
+                return route_config_[(current_ + 1) % route_config_.count];
+            else
+                return route_config_[(current_ + 1) % (route_config_.count - 1)];
+        }
+    }
+    public float current_length { get { return route_config_.length[current_]; } }
+
     /// <summary>
     /// 是否完成
     /// </summary>

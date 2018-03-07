@@ -120,6 +120,7 @@ public class RouteConfig : MonoBehaviour
 
         bezier.Set(p0, p1, p2, p3);
 
+        float microstep = step_length / kStepParts;
         float step = 0;
         pt0.steps_ = new float[0];
 
@@ -178,6 +179,7 @@ public class RouteConfig : MonoBehaviour
             total_length += length[i];
         }
     }
+
     /// <summary>
     /// 设置是否闭环
     /// </summary>
@@ -189,6 +191,7 @@ public class RouteConfig : MonoBehaviour
 
     public void Refresh()
     {
+        current_ = -1;
         //获得路点信息
         points_ = GetComponentsInChildren<RoutePoint>();
         beziers_ = new RouteMath.Bezier3D[points_.Length];
@@ -200,11 +203,11 @@ public class RouteConfig : MonoBehaviour
     /// 是否为闭环
     /// </summary>
     public bool IsLoop { get { return loop_; } }
-
+    /// <summary>
+    /// 路径点数组
+    /// </summary>
     public RoutePoint[] points { get { return points_; } }
     RoutePoint[] points_;
-    Bezier3D[] beziers_;
-
     public RoutePoint this[int index] 
     { 
         get
@@ -214,6 +217,22 @@ public class RouteConfig : MonoBehaviour
             return points_[index];
         }
     }
+    /// <summary>
+    /// 路点数量
+    /// </summary>
+    public int count
+    {
+        get
+        {
+            if(points_ == null)
+                return 0;
+            return points_.Length;
+        }
+    }
+    /// <summary>
+    /// 曲线数组
+    /// </summary>
+    Bezier3D[] beziers_;
 
     /// <summary>
     /// 切割单位长
@@ -272,7 +291,6 @@ public class RouteConfig : MonoBehaviour
         SetCurrent(curr);
         return GetNormalizedT(movelength);
     }
-
     /// <summary>
     /// 通过总长度获得坐标点
     /// </summary>
@@ -291,7 +309,6 @@ public class RouteConfig : MonoBehaviour
     {
         return GetPointByTotalLength(precent * total_length);
     }
-
     /// <summary>
     /// 获取曲线类
     /// </summary>
@@ -311,7 +328,6 @@ public class RouteConfig : MonoBehaviour
             if(index > points_.Length - 2)
                 index = points_.Length - 2;
         }
-
         Bezier3D b = beziers_[index];
         if(b == null)
         {
@@ -356,29 +372,8 @@ public class RouteConfig : MonoBehaviour
             if(current > points_.Length - 2)
                 current = points_.Length - 2;
         }
-
-        if(current_ == current)
-            return;
         current_ = current;
-
-        Quaternion rot = transform.rotation;
-        RoutePoint pt0 = null, pt1 = null;
-        if(current_ < points_.Length - 1)
-        {
-            pt0 = points_[current_];
-            pt1 = points_[current_ + 1];
-        }
-        else
-        {
-            pt0 = points_[current_];
-            pt1 = points_[0];
-        }
-
-        var p0 = pt0.transform.position;
-        var p1 = p0 + rot * pt0.next_weight_point;
-        var p3 = pt1.transform.position;
-        var p2 = p3 + rot * pt1.prev_weight_point;
-        bezier_.Set(p0, p1, p2, p3);
+        bezier_ = GetBezier3D(current);
     }
     /// <summary>
     /// 设置现在下一个所在点
@@ -429,7 +424,6 @@ public class RouteConfig : MonoBehaviour
         else
             return current == l - 2;
     }
-
     /// <summary>
     /// 获得标准T
     /// </summary>
@@ -460,7 +454,6 @@ public class RouteConfig : MonoBehaviour
         var t = (sf - si) * (nextt - prevt) + prevt;
         return t;
     }
-    
     /// <summary>
     /// 获得曲线中一点
     /// </summary>
@@ -524,7 +517,9 @@ public class RouteConfig : MonoBehaviour
             return points_[current_ + 1];
         }
     }
-
+    /// <summary>
+    /// 当前长度
+    /// </summary>
     public float current_length 
     {
         get 
@@ -540,19 +535,7 @@ public class RouteConfig : MonoBehaviour
     public int current { get { return current_; } }
     int current_ = -1;
     /// <summary>
-    /// 路点数量
+    /// 当前曲线
     /// </summary>
-    public int count 
-    { 
-        get
-        {
-            if(points_ == null)
-                return 0;
-            return points_.Length;
-        }
-    }
-
-    float microstep { get { return step_length / kStepParts; } }
-
     Bezier3D bezier_ = new Bezier3D();
 }
