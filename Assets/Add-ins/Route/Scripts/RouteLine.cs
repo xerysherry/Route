@@ -138,7 +138,7 @@ public class RouteLine : MonoBehaviour
             GetABPoint(pt, polar, out A0, out B0);
             vi = VerticesStart2(A0, B0, vi, ref vertices, ref uv);
 
-            if(vi > 6 && interval == 0.0f)
+            if(vi >= 6 && interval == 0.0f)
             {
                 vertices[vi - 2] = vertices[vi - 4];
                 vertices[vi - 1] = vertices[vi - 3];    

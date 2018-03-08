@@ -23,9 +23,6 @@ public class RouteConfig : MonoBehaviour
     void DrawCurve(Bezier3D bezier, Quaternion rot, 
                 RoutePoint pt0, RoutePoint pt1)
     {
-        //var pt0 = points_[i];
-        //var pt1 = points_[i + 1];
-
         var p0 = pt0.transform.position;
         var p1 = p0 + rot * pt0.next_weight_point;
         var p3 = pt1.transform.position;
@@ -39,7 +36,7 @@ public class RouteConfig : MonoBehaviour
             iv = 0.001f;
 
         Gizmos.color = pt0.color;
-        if((pt0.delta_next.magnitude == 0 && pt0.delta_next.magnitude == 0))
+        if((pt0.delta_next.magnitude == 0 && pt1.delta_next.magnitude == 0))
         {
             Gizmos.DrawLine(p0, p3);
         }

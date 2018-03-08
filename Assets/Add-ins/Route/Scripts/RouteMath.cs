@@ -57,7 +57,7 @@ public static class RouteMath
         }
         public Vector3 GetTangent(float t)
         {
-            float t1 = Mathf.Clamp(t, 0, 1);
+            float t1 = Mathf.Clamp(t, 0.000001f, 0.999999f);
             float t2 = t1 * t1;
 
             return (p0 * (-3 + 6 * t1 - 3 * t2) +
