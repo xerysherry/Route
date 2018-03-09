@@ -267,17 +267,25 @@ public class RouteConfig : MonoBehaviour
     /// <returns></returns>
     public float GetNormalizedByTotalLength(float dist)
     {
+        int index = 0;
+        var n = GetNormalizedByTotalLength(dist, out index);
+        SetCurrent(index);
+        return n;
+    }
+    public float GetNormalizedByTotalLength(float dist, out int index)
+    {
         if(dist < 0)
             dist = 0;
         else if(dist > total_length)
             dist = total_length;
 
         int count = length.Length;
-        int curr = 0;
         float movelength = 0;
-        for(; curr < count; ++curr)
+
+        index = 0;
+        for(; index < count; ++index)
         {
-            var l = length[curr];
+            var l = length[index];
             if(dist < l)
             {
                 movelength = dist;
@@ -285,27 +293,9 @@ public class RouteConfig : MonoBehaviour
             }
             dist -= l;
         }
-        SetCurrent(curr);
-        return GetNormalizedT(movelength);
+        return GetNormalizedT(index, movelength);
     }
-    /// <summary>
-    /// 通过总长度获得坐标点
-    /// </summary>
-    /// <param name="dist"></param>
-    /// <returns></returns>
-    public Vector3 GetPointByTotalLength(float dist)
-    {
-        return GetPoint(GetNormalizedByTotalLength(dist));
-    }
-    /// <summary>
-    /// 通过总进程获得坐标点
-    /// </summary>
-    /// <param name="current_length"></param>
-    /// <returns></returns>
-    public Vector3 GetPointByTotalPrecent(float precent)
-    {
-        return GetPointByTotalLength(precent * total_length);
-    }
+
     /// <summary>
     /// 获取曲线类
     /// </summary>
@@ -325,6 +315,10 @@ public class RouteConfig : MonoBehaviour
             if(index > points_.Length - 2)
                 index = points_.Length - 2;
         }
+#if UNITY_EDITOR
+        if(beziers_ == null)
+            beziers_ = new Bezier3D[points_.Length];
+#endif
         Bezier3D b = beziers_[index];
         if(b == null)
         {
@@ -350,6 +344,67 @@ public class RouteConfig : MonoBehaviour
             beziers_[index] = b;
         }
         return b;
+    }
+    /// <summary>
+    /// 获取下一个索引
+    /// </summary>
+    /// <param name="current"></param>
+    /// <returns></returns>
+    public int GetNextIndex(int current)
+    {
+        int next = current + 1;
+        if(loop_)
+            next = next % points_.Length;
+        else
+            next = Mathf.Clamp(next, 0, points_.Length - 2);
+        return next;
+    }
+    /// <summary>
+    /// 获取上一个索引
+    /// </summary>
+    /// <param name="current"></param>
+    /// <returns></returns>
+    public int GetPrevIndex(int current)
+    { 
+        int prev = current - 1;
+        if(loop_)
+            prev = (prev + points_.Length) % points_.Length;
+        else
+            prev = Mathf.Clamp(prev, 0, points_.Length - 2);
+        return prev;
+    }
+    /// <summary>
+    /// 获得标准T
+    /// </summary>
+    /// <param name="index">点索引</param>
+    /// <param name="move">移动距离</param>
+    public float GetNormalizedT(int index, float move)
+    {
+        if(index < 0 ||
+            index >= points_.Length ||
+            index >= length.Length)
+            return 0;
+
+        var l = length[index];
+        if(l == 0)
+            return 0;
+
+        var point = points_[index];
+        if(point.steps_.Length == 0)
+            return move / l;
+
+        var sf = (move / step_length);
+        var si = (int)sf;
+        if(si >= point.steps_.Length)
+            return 1;
+
+        float prevt = 0;
+        if(si > 0)
+            prevt = point.steps_[si - 1];
+        float nextt = point.steps_[si];
+
+        var t = (sf - si) * (nextt - prevt) + prevt;
+        return t;
     }
 
     /// <summary>
@@ -428,28 +483,25 @@ public class RouteConfig : MonoBehaviour
     /// <returns></returns>
     public float GetNormalizedT(float move)
     {
-        if(current_ >= points_.Length ||
-            current_ >= length.Length)
-            return 0;
-        if(current_point.steps_.Length == 0)
-        {
-            if(current_length == 0)
-                return 0;
-            return move / current_length;
-        }
-        var sf = (move / step_length);
-        var si = (int)sf;
-        if(si >= current_point.steps_.Length)
-            return 1;
-
-        float prevt = 0;
-        if(si > 0)
-            prevt = current_point.steps_[si - 1];
-        float nextt = current_point.steps_[si];
-        
-
-        var t = (sf - si) * (nextt - prevt) + prevt;
-        return t;
+        return GetNormalizedT(current_, move);
+    }
+    /// <summary>
+    /// 通过总长度获得坐标点
+    /// </summary>
+    /// <param name="dist"></param>
+    /// <returns></returns>
+    public Vector3 GetPointByTotalLength(float dist)
+    {
+        return GetPoint(GetNormalizedByTotalLength(dist));
+    }
+    /// <summary>
+    /// 通过总进程获得坐标点
+    /// </summary>
+    /// <param name="current_length"></param>
+    /// <returns></returns>
+    public Vector3 GetPointByTotalPrecent(float precent)
+    {
+        return GetPointByTotalLength(precent * total_length);
     }
     /// <summary>
     /// 获得曲线中一点

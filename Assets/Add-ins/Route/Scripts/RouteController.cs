@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using Bezier3D = RouteMath.Bezier3D;
 
 public class RouteController
 {
@@ -21,9 +22,8 @@ public class RouteController
     public void SetRouteConfig(RouteConfig config)
     {
         Clear();
-
         route_config_ = config;
-        route_config_.SetCurrent(0);
+        Reset();
     }
     /// <summary>
     /// 是否旋转
@@ -39,7 +39,11 @@ public class RouteController
     public void Reset()
     {
         move_length_ = 0;
-        route_config_.SetCurrent(0);
+        if(route_config_ != null)
+        {
+            current_ = 0;
+            bezier_ = route_config_.GetBezier3D(current_);
+        }
     }
     /// <summary>
     /// 重置移动
@@ -53,12 +57,7 @@ public class RouteController
     /// </summary>
     public void Clear()
     {
-        if(route_config_)
-        {
-            route_config_.gameObject.SetActive(false);
-            GameObject.Destroy(route_config_.gameObject);
-			route_config_ = null;
-        }
+        route_config_ = null;
         move_length_ = 0;
     }
 
@@ -181,31 +180,31 @@ public class RouteController
             if(is_finish)
                 break;
             //进入下一路点
-            route_config_.SetCurrent(current + 1);
+            SetCurrent(current_ + 1);
 
             on_enter_point_(current_point);
             if(!string.IsNullOrEmpty(current_point.message))
                 on_message_(current_point.message);
 
-            //计算等待时间
-            if(velocity <= 0.0f)
-            {
-                move_length_ = 0;
-            }
-            else
-            {
-                wait_time_ = move_length_ / velocity;
-                if(wait_time_ > current_point.keeptime)
-                {
-                    velocity = GetCurrenVelocity();
-                    move_length_ = (wait_time_ - current_point.keeptime) * velocity;
-                }
-                else
-                {
-                    move_length_ = 0;
-                    break;
-                }
-            }
+            ////计算等待时间
+            //if(velocity <= 0.0f)
+            //{
+            //    move_length_ = 0;
+            //}
+            //else
+            //{
+            //    wait_time_ = move_length_ / velocity;
+            //    if(wait_time_ > current_point.keeptime)
+            //    {
+            //        velocity = GetCurrenVelocity();
+            //        move_length_ = (wait_time_ - current_point.keeptime) * velocity;
+            //    }
+            //    else
+            //    {
+            //        move_length_ = 0;
+            //        break;
+            //    }
+            //}
         }
     }
 
@@ -239,7 +238,10 @@ public class RouteController
 
         obj.transform.position = GetPoint();
         if(rotate_)
-            obj.transform.eulerAngles = new Vector3(0, RouteMath.GetPolarEular(GetTangent()), 0);
+        {
+            obj.transform.rotation = Quaternion.LookRotation(GetTangent());
+            //obj.transform.eulerAngles = new Vector3(0, RouteMath.GetPolarEular(GetTangent()), 0);
+        }
     }
 
     public RoutePoint FindMessage(int start_index, string message)
@@ -293,27 +295,25 @@ public class RouteController
 
     public void SetCurrent(int cur)
     {
-        route_config_.SetCurrent(cur);
+        //route_config_.SetCurrent(cur);
+        if(current_ != cur)
+        {
+            current_ = cur;
+            bezier_ = route_config_.GetBezier3D(cur);
+            last_move_length_ = -1; 
+        }
     }
     public Vector3 GetPoint()
     {
-        //var t = move_length_ / current_length;
-        //return GetPoint(Mathf.Clamp(t, 0, 1));
-        return GetPoint(move_length_);
+        if(bezier_ == null)
+            bezier_ = route_config_.GetBezier3D(current_);
+        return bezier_.Get(normalized);
     }
     public Vector3 GetTangent()
     {
-        //var t = move_length_ / current_length;
-        //return GetTangent(Mathf.Clamp(t, 0, 1));
-        return GetTangent(move_length_);
-    }
-    public Vector3 GetPoint(float l)
-    {
-        return route_config_.GetPointByLength(l);
-    }
-    public Vector3 GetTangent(float l)
-    {
-        return route_config_.GetTangentByLength(l);
+        if(bezier_ == null)
+            bezier_ = route_config_.GetBezier3D(current_);
+        return bezier_.GetTangent(normalized);
     }
     
     /// <summary>
@@ -372,21 +372,34 @@ public class RouteController
     ///// </summary>
     //public float current_length { get { return route_config_.current_length; } }
 
-
+    /// <summary>
+    /// 当前路点
+    /// </summary>
     public int current { get { return current_; } }
     int current_ = 0;
-
-    public RoutePoint current_point { get { return route_config_[current_]; } }
-    public RoutePoint next_point 
+    /// <summary>
+    /// 当前标准值
+    /// </summary>
+    float normalized 
     {
         get
         {
-            if(route_config_.IsLoop)
-                return route_config_[(current_ + 1) % route_config_.count];
-            else
-                return route_config_[(current_ + 1) % (route_config_.count - 1)];
+            if(last_move_length_ != move_length_)
+            {
+                normalized_ = route_config_.GetNormalizedT(current_, move_length_);
+                last_move_length_ = move_length_;
+            }
+            return normalized_;
         }
     }
+    float normalized_ = 0;
+    /// <summary>
+    /// 当前曲线
+    /// </summary>
+    Bezier3D bezier_ = null;
+
+    public RoutePoint current_point { get { return route_config_[current_]; } }
+    public RoutePoint next_point { get { return route_config_[(current_ + 1) % route_config_.count]; } }
     public float current_length { get { return route_config_.length[current_]; } }
 
     /// <summary>
@@ -408,6 +421,7 @@ public class RouteController
     /// </summary>
     public float move_length { get { return move_length_; } }
     float move_length_ = 0;
+    float last_move_length_ = -1;
     /// <summary>
     /// 等待时间
     /// </summary>
