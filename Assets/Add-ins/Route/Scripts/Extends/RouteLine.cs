@@ -65,38 +65,68 @@ public class RouteLine : MonoBehaviour
         Vector3 pos = transform.position;
         Vector3 A0, A1, B0, B1;
         Vector3 pt, tangent;
-        float polar = 0;
 
         do
         {
-            nt = route.GetNormalizedT(subdist);
-            pt = route.GetPoint(nt) - pos;
-            tangent = route.GetTangent(nt);
-            GetABPoint(pt, tangent, out A0, out B0);
-            vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
-
-            if(vi >= 6 && interval == 0.0f)
+            if(mode == Mode.TWIST)
             {
-                vertices[vi - 2] = vertices[vi - 4];
-                vertices[vi - 1] = vertices[vi - 3];    
-                uv[vi - 2] = uv[vi - 6];
-                uv[vi - 1] = uv[vi - 5];
-            }
+                nt = route.GetNormalizedT(subdist);
+                pt = route.GetPoint(nt) - pos;
+                tangent = route.GetTangent(nt);
+                GetABPoint(pt, tangent, out A0, out B0);
+                vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
 
-            subdist += step;
-            while(subdist > route.current_length)
+                if(vi >= 6 && interval == 0.0f)
+                {
+                    vertices[vi - 2] = vertices[vi - 4];
+                    vertices[vi - 1] = vertices[vi - 3];
+                    uv[vi - 2] = uv[vi - 6];
+                    uv[vi - 1] = uv[vi - 5];
+                }
+
+                subdist += step;
+
+                while(subdist > route.current_length)
+                {
+                    subdist -= route.current_length;
+                    if(route.IsTail())
+                        goto EXIT;
+                    route.Next();
+                }
+
+                nt = route.GetNormalizedT(subdist);
+                pt = route.GetPoint(nt) - pos;
+                tangent = route.GetTangent(nt);
+                GetABPoint(pt, tangent, out A1, out B1);
+                vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
+            }
+            else
             {
-                subdist -= route.current_length;
-                if(route.IsTail())
-                    goto EXIT;
-                route.Next();
-            }
+                subdist += step / 2;
+                while(subdist > route.current_length)
+                {
+                    subdist -= route.current_length;
+                    if(route.IsTail())
+                        goto EXIT;
+                    route.Next();
+                }
 
-            nt = route.GetNormalizedT(subdist);
-            pt = route.GetPoint(nt) - pos;
-            tangent = route.GetTangent(nt);
-            GetABPoint(pt, tangent, out A1, out B1);
-            vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
+                nt = route.GetNormalizedT(subdist);
+                pt = route.GetPoint(nt) - pos;
+                tangent = route.GetTangent(nt);
+                GetABPoint(pt, tangent, out A0, out B0);
+
+                tangent = tangent * step/2;
+                A0 = A0 - tangent;
+                B0 = B0 - tangent;
+                vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
+
+                A1 = A0 + tangent;
+                B1 = B0 + tangent;
+                vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
+
+                subdist += step/2;
+            }
 
             subdist += iv;
             while(subdist > route.current_length)
@@ -215,6 +245,24 @@ public class RouteLine : MonoBehaviour
         return index + 2;
     }
 
+    public enum Mode
+    {
+        /// <summary>
+        /// 扭曲
+        /// </summary>
+        TWIST,
+        /// <summary>
+        /// 矩形
+        /// </summary>
+        RECTANGLE,
+    }
+    /// <summary>
+    /// 模式
+    /// </summary>
+    public Mode mode;
+    /// <summary>
+    /// 路径配置
+    /// </summary>
     public RouteConfig route;
     /// <summary>
     /// 直线纹理
@@ -244,7 +292,9 @@ public class RouteLine : MonoBehaviour
     /// 自适应
     /// </summary>
     public bool self_adjust = true;
-    
+
+    public float t = 0;
+
     MeshFilter filter_;
     MeshFilter filter
     {
