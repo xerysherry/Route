@@ -185,26 +185,6 @@ public class RouteController
             on_enter_point_(current_point);
             if(!string.IsNullOrEmpty(current_point.message))
                 on_message_(current_point.message);
-
-            ////计算等待时间
-            //if(velocity <= 0.0f)
-            //{
-            //    move_length_ = 0;
-            //}
-            //else
-            //{
-            //    wait_time_ = move_length_ / velocity;
-            //    if(wait_time_ > current_point.keeptime)
-            //    {
-            //        velocity = GetCurrenVelocity();
-            //        move_length_ = (wait_time_ - current_point.keeptime) * velocity;
-            //    }
-            //    else
-            //    {
-            //        move_length_ = 0;
-            //        break;
-            //    }
-            //}
         }
     }
 
@@ -240,7 +220,6 @@ public class RouteController
         if(rotate_)
         {
             obj.transform.rotation = Quaternion.LookRotation(GetTangent());
-            //obj.transform.eulerAngles = new Vector3(0, RouteMath.GetPolarEular(GetTangent()), 0);
         }
     }
 

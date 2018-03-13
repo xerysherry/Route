@@ -5,7 +5,7 @@ using UnityEditor;
 using Bezier3D = RouteMath.Bezier3D;
 
 [ExecuteInEditMode]
-[AddComponentMenu("Route/RouteConfig")]
+[AddComponentMenu("Route/Route Config")]
 public class RouteConfig : MonoBehaviour
 {
     /// <summary>

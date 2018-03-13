@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 [ExecuteInEditMode]
+[AddComponentMenu("Route/Route Line")]
 public class RouteLine : MonoBehaviour 
 {
     static readonly Vector2[] kUVs = new Vector2[]
@@ -14,74 +15,11 @@ public class RouteLine : MonoBehaviour
 
     void Start () 
     {
-        Remesh2();
+        Remesh();
 	}
-	
 	void Update () 
-    {
-        //Remesh();
-	}
-
-    //void Remesh()
-    //{
-    //    route_.Refresh();
-    //    renderer.material.mainTexture = texture;
-    //
-    //    float totallength = 0;
-    //    for(int i = 0; i < route_.count; ++i)
-    //    {
-    //        route_.SetCurrent(i);
-    //        totallength += route_.current_length;
-    //    }
-    //    var scount = (int)Mathf.Floor(totallength / step);
-    //    Vector3[] vertices = new Vector3[(scount + 1) * 2];
-    //    Vector2[] uv = new Vector2[(scount + 1) * 2];
-    //    int[] triangles = new int[scount * 6];
-    //
-    //    int vi = 0;
-    //    float dist = 0, subdist = 0, nt = 0;
-    //    route_.SetCurrent(0);
-    //
-    //    Vector3 A, B;
-    //    var pt = route_.current_point.transform.position;
-    //    var tangent = route_.current_point.next_weight_point;
-    //    var polar = MathUtils.GetPolarEular(tangent);
-    //    GetABPoint(pt, polar, out A, out B);
-    //    vi = VerticesStart(A, B, vi, ref vertices, ref uv);
-    //
-    //    do
-    //    {
-    //        subdist += step;
-    //        while(subdist > route_.current_length)
-    //        {
-    //            subdist -= route_.current_length;
-    //            if(route_.current+1 >= route_.count)
-    //                goto EXIT;
-    //            route_.SetCurrent(route_.current + 1);
-    //        }
-    //
-    //        nt = route_.GetNormalizedT(subdist);
-    //        pt = route_.GetPoint(nt);
-    //        tangent = route_.GetTangent(nt);
-    //        polar = MathUtils.GetPolarEular(tangent);
-    //        GetABPoint(pt, polar, out A, out B);
-    //        vi = VerticesNext(A, B, vi, 
-    //                        ref vertices, ref uv, ref triangles);
-    //        if(vi >= vertices.Length)
-    //            break;
-    //    } while((dist += step) < totallength);
-    //
-    //EXIT:
-    //    Mesh mesh = new Mesh();
-    //    mesh.vertices = vertices;
-    //    mesh.uv = uv;
-    //    mesh.triangles = triangles;
-    //    filter.mesh = mesh;
-    //
-    //    return;
-    //}
-
-    public void Remesh2()
+    {}
+    public void Remesh()
     {
         if(route == null)
             route = gameObject.GetComponent<RouteConfig>();
@@ -134,9 +72,8 @@ public class RouteLine : MonoBehaviour
             nt = route.GetNormalizedT(subdist);
             pt = route.GetPoint(nt) - pos;
             tangent = route.GetTangent(nt);
-            polar = RouteMath.GetPolarEular(tangent);
-            GetABPoint(pt, polar, out A0, out B0);
-            vi = VerticesStart2(A0, B0, vi, ref vertices, ref uv);
+            GetABPoint(pt, tangent, out A0, out B0);
+            vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
 
             if(vi >= 6 && interval == 0.0f)
             {
@@ -150,9 +87,6 @@ public class RouteLine : MonoBehaviour
             while(subdist > route.current_length)
             {
                 subdist -= route.current_length;
-                Debug.Log(vi);
-                Debug.Log(route.current);
-                Debug.Log(route.IsTail());
                 if(route.IsTail())
                     goto EXIT;
                 route.Next();
@@ -161,9 +95,8 @@ public class RouteLine : MonoBehaviour
             nt = route.GetNormalizedT(subdist);
             pt = route.GetPoint(nt) - pos;
             tangent = route.GetTangent(nt);
-            polar = RouteMath.GetPolarEular(tangent);
-            GetABPoint(pt, polar, out A1, out B1);
-            vi = VerticesNext2(A1, B1, vi, ref vertices, ref uv, ref triangles);
+            GetABPoint(pt, tangent, out A1, out B1);
+            vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
 
             subdist += iv;
             while(subdist > route.current_length)
@@ -210,49 +143,27 @@ public class RouteLine : MonoBehaviour
     /// +---------+---------+---
     /// B0        B1        B2   ...
     /// </summary>
-    void GetABPoint(Vector3 loc, float angle,
+    void GetABPoint(Vector3 loc, Vector3 tangent,
                     out Vector3 A, out Vector3 B)
     {
+        var angle = RouteMath.GetPolarEular(tangent);
         var quat = Quaternion.AngleAxis(angle, RouteMath.kAxisY);
         var iquat = Quaternion.AngleAxis(angle + 180, RouteMath.kAxisY);
-        A = (quat * RouteMath.kAxisX) * width / 2 + loc;
-        B = (iquat * RouteMath.kAxisX) * width / 2 + loc;
+        if(eular == 0)
+        {
+            A = (quat * RouteMath.kAxisX) * width / 2 + loc;
+            B = (iquat * RouteMath.kAxisX) * width / 2 + loc;
+        }
+        else
+        {
+            A = (quat * RouteMath.kAxisX) * width / 2;
+            B = (iquat * RouteMath.kAxisX) * width / 2;
+            A = Quaternion.AngleAxis(eular, tangent) * A + loc;
+            B = Quaternion.AngleAxis(eular, tangent) * B + loc;
+        }
     }
 
-    //int VerticesStart(Vector3 A, Vector3 B, int index,
-    //                ref Vector3[] vertices, ref Vector2[] uv)
-    //{
-    //    vertices[index] = A;
-    //    vertices[index + 1] = B;
-    //
-    //    uvoffset = (index / 2) % 2;
-    //    uv[index] = kUVs[0];
-    //    uv[index+1] = kUVs[1];
-    //    return index + 2;
-    //}
-    //
-    //int VerticesNext(Vector3 A, Vector3 B, int index,
-    //                ref Vector3[] vertices, ref Vector2[] uv, ref int[] triangles)
-    //{
-    //    vertices[index] = A;
-    //    vertices[index + 1] = B;
-    //
-    //    var uvi = ((index / 2 + uvoffset) % 2) * 2;
-    //    uv[index] = kUVs[uvi];
-    //    uv[index+1] = kUVs[uvi + 1];
-    //
-    //    var ti = (index / 2 - 1) * 6;
-    //    triangles[ti] = index - 2;
-    //    triangles[ti + 1] = index - 1;
-    //    triangles[ti + 2] = index;
-    //    triangles[ti + 3] = index + 1;
-    //    triangles[ti + 4] = index;
-    //    triangles[ti + 5] = index - 1;
-    //
-    //    return index + 2;
-    //}
-
-    int VerticesStart2(Vector3 A, Vector3 B, int index,
+    int VerticesStart(Vector3 A, Vector3 B, int index,
                     ref List<Vector3> vertices, ref List<Vector2> uv)
     {
         vertices[index] = A;
@@ -275,7 +186,7 @@ public class RouteLine : MonoBehaviour
         return index + 2;
     }
 
-    int VerticesNext2(Vector3 A, Vector3 B, int index,
+    int VerticesNext(Vector3 A, Vector3 B, int index,
                     ref List<Vector3> vertices, ref List<Vector2> uv, ref List<int> triangles)
     {
         vertices[index] = A;
@@ -321,6 +232,10 @@ public class RouteLine : MonoBehaviour
     /// 间隔
     /// </summary>
     public float interval = 0;
+    /// <summary>
+    /// 绕切线旋转角
+    /// </summary>
+    public float eular = 0;
     /// <summary>
     /// 翻转
     /// </summary>

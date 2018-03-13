@@ -5,6 +5,12 @@ using System.Collections;
 [CustomEditor(typeof(RouteConfig))]
 public class RouteConfigDrawer : Editor
 {
+    [MenuItem("Route/Create Route Config")]
+    static void CreateRouteConfig()
+    {
+        GameObject obj = new GameObject("RouteConfig");
+        Select(obj.AddComponent<RouteConfig>());
+    }
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
@@ -113,11 +119,20 @@ public class RouteConfigDrawer : Editor
 [CustomEditor(typeof(RouteLine))]
 public class RouteLineDrawer : Editor
 {
+    [MenuItem("Route/Extends/Create Route Line")]
+    static void CreateRouteConfig()
+    {
+        GameObject obj = new GameObject("RouteLine");
+        obj.AddComponent<RouteLine>();
+        Selection.objects = new GameObject[] { obj };
+        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+    }
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
         if(GUILayout.Button("Build Mesh"))
-            (target as RouteLine).Remesh2();
+            (target as RouteLine).Remesh();
         base.OnInspectorGUI();
     }
 }

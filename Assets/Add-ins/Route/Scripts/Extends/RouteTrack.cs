@@ -2,6 +2,7 @@
 using System.Collections;
 
 [ExecuteInEditMode]
+[AddComponentMenu("Route/Route Track")]
 public class RouteTrack : MonoBehaviour 
 {
     void Refresh()

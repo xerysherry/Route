@@ -2,6 +2,7 @@
 using System.Collections;
 
 [ExecuteInEditMode]
+[AddComponentMenu("Route/LookAtSomething")]
 public class LookAtSomething : MonoBehaviour 
 {
 	void Update () 
@@ -57,7 +58,6 @@ public class LookAtSomething : MonoBehaviour
         var p3 = (Quaternion.AngleAxis(160, axis) * dir).normalized * 0.3f;
         var p4 = (Quaternion.AngleAxis(-160, axis) * dir).normalized * 0.3f;
 
-        
         while(l < length)
         {
             var p = transform.position + dir * l;
@@ -72,8 +72,8 @@ public class LookAtSomething : MonoBehaviour
 
     public enum Target
     {
-        TargetGameObject,
         TargetPosition,
+        TargetGameObject,
     }
     public Target target = Target.TargetGameObject;
     public GameObject target_obj;

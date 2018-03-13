@@ -2,6 +2,7 @@
 using System.Collections;
 
 [ExecuteInEditMode]
+[AddComponentMenu("Route/Appendage")]
 public class Appendage : MonoBehaviour
 {
 	void Update () 

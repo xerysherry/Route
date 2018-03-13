@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Collections;
 
 [ExecuteInEditMode]
-[AddComponentMenu("Route/RoutePoint")]
+[AddComponentMenu("Route/Route Point")]
 public class RoutePoint : MonoBehaviour
 {
     static readonly float kDistanceLine = 1.5f;

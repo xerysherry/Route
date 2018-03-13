@@ -6,6 +6,7 @@ using UnityEngine;
 /// 十字对象
 /// </summary>
 [ExecuteInEditMode]
+[AddComponentMenu("Route/Plain Axes")]
 public class PlainAxes : MonoBehaviour
 {
     static readonly float kOSize = 0.025f;
