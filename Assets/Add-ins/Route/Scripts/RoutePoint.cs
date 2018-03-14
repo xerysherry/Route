@@ -34,7 +34,8 @@ public class RoutePoint : MonoBehaviour
     void OnDrawGizmos()
     {
         DrawPoint(color);
-        DrawArrow(color);
+        //if(show_arrow_)
+            DrawArrow(color);
     }
 
     void DrawPoint(Color color)
@@ -116,6 +117,12 @@ public class RoutePoint : MonoBehaviour
         Color.magenta,
         Color.yellow,
     };
+
+    //public void ShowArrow(bool value)
+    //{
+    //    show_arrow_ = value;
+    //}
+    //bool show_arrow_ = true;
 #endif
 
     void OnDestroy()

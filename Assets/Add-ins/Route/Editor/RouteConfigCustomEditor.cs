@@ -156,10 +156,10 @@ public class RoutePointDrawer : Editor
         //是否显示操作杆
         if(!show_arrow_)
         {
-            GUI.Window(1, new Rect(5, 20, 200, 150), TestWindow, "Point Config(路点配置窗口)");
+            GUI.Window(1, new Rect(5, 20, 200, 150), DoGUI, "Point Config(路点配置窗口)");
             return;
         }
-        GUI.Window(1, new Rect(5, 20, 200, 210), TestWindow, "Point Config(路点配置窗口)");
+        GUI.Window(1, new Rect(5, 20, 200, 210), DoGUI, "Point Config(路点配置窗口)");
 
         Quaternion rot = new Quaternion();
         Quaternion irot = new Quaternion();
@@ -249,7 +249,7 @@ public class RoutePointDrawer : Editor
 #endif
     }
 
-    void TestWindow(int id)
+    void DoGUI(int id)
     {
         RoutePoint point = target as RoutePoint;
         point.name = EditorGUILayout.TextField(point.name);
@@ -292,9 +292,12 @@ public class RoutePointDrawer : Editor
                     RouteConfigDrawer.Select(c.points[i + 1]);
             }
         }
-        if(GUILayout.Button(show_arrow_ ? "Hide Arrow(隐藏曲线操作杆)" 
+        if(GUILayout.Button(show_arrow_ ? "Hide Arrow(隐藏曲线操作杆)"
                                         : "Show Arrow(显示曲线操作杆)"))
+        {
             show_arrow_ = !show_arrow_;
+            //point.ShowArrow(show_arrow_);
+        }
 
         if(!show_arrow_)
             return;
