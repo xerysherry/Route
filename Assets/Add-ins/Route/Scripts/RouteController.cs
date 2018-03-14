@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System;
-using System.Collections;
 using Bezier3D = RouteMath.Bezier3D;
 
 public class RouteController

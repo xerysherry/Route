@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 [AddComponentMenu("Route/Route Generator")]
 public class RouteGenerator : MonoBehaviour 
@@ -41,17 +41,19 @@ public class RouteGenerator : MonoBehaviour
     void RefreshObjList()
     {
         var count = transform.childCount;
-        obj_list_ = new GameObject[count];
+        obj_list_ = new List<GameObject>();
         for(int i = 0; i < count; ++i)
         {
-            obj_list_[i] = transform.GetChild(i).gameObject;
+            var obj = transform.GetChild(i).gameObject;
+            if(!obj.GetComponent<RoutePoint>())
+                obj_list_.Add(obj);
         }
     }
 
     public void Clear()
     {
         RefreshObjList();
-        for(int i = 0; i < obj_list_.Length; ++i)
+        for(int i = 0; i < obj_list_.Count; ++i)
         {
             DestroyGameObject(obj_list_[i]);
         }
@@ -78,6 +80,8 @@ public class RouteGenerator : MonoBehaviour
 
         ctrler_.Reset();
 
+        if(step <= 0.000001f)
+            step = 1;
         var totallength = route.total_length;
         var scount = (int)Mathf.Ceil(totallength / step);
         if(scount == 0)
@@ -95,7 +99,7 @@ public class RouteGenerator : MonoBehaviour
                 delta = totallength / (scount - 1);
         }
         last_obj_list_ = obj_list_;
-        obj_list_ = new GameObject[scount];
+        obj_list_ = new List<GameObject>(scount);
 
         var curr = 0.0f;
         var index = 0;
@@ -123,9 +127,9 @@ public class RouteGenerator : MonoBehaviour
             curr += delta;
         }while(index < scount);
 
-        if(last_obj_list_ != null && index < last_obj_list_.Length)
+        if(last_obj_list_ != null && index < last_obj_list_.Count)
         { 
-            for(; index<last_obj_list_.Length; ++index)
+            for(; index<last_obj_list_.Count; ++index)
                 DestroyGameObject(last_obj_list_[index]);
         }
         last_obj_list_ = null;
@@ -133,15 +137,17 @@ public class RouteGenerator : MonoBehaviour
 
     public GameObject GetGameObject(int index)
     {
-        if(index >= obj_list_.Length)
+        if(index >= obj_list_.Capacity)
             return null;
 
         GameObject o = null;
-        if(last_obj_list_ != null && index < last_obj_list_.Length)
+        if(last_obj_list_ != null && index < last_obj_list_.Count)
             o = last_obj_list_[index];
         else
             o = (GameObject)GameObject.Instantiate(obj);
         o.transform.parent = transform;
+        while(obj_list_.Count < index + 1)
+            obj_list_.Add(null);
         obj_list_[index] = o;
         return o;
     }
@@ -176,6 +182,6 @@ public class RouteGenerator : MonoBehaviour
     public float step = 1;
 
     RouteController ctrler_;
-    GameObject[] obj_list_;
-    GameObject[] last_obj_list_;
+    List<GameObject> obj_list_;
+    List<GameObject> last_obj_list_;
 }

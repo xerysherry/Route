@@ -222,7 +222,6 @@ public class RouteLine : MonoBehaviour
         vertices[index] = A;
         vertices[index + 1] = B;
 
-        var uvi = ((index / 2 + uvoffset) % 2) * 2;
         if((flip & Flip.VERTICAL) != 0)
         {
             uv[index + 1] = kUVs[2];
@@ -346,7 +345,11 @@ public class RouteLine : MonoBehaviour
     }
 
     MeshRenderer renderer_;
+#if UNITY_2017
+    new MeshRenderer renderer
+#else
     MeshRenderer renderer
+#endif
     {
         get
         {
@@ -371,5 +374,4 @@ public class RouteLine : MonoBehaviour
             return material;
         }
     }
-    int uvoffset = 0;
 }

@@ -9,8 +9,9 @@ public static class PlainAxesDrawer
     {
         GameObject obj = new GameObject("PlainAxes");
         obj.AddComponent<PlainAxes>();
+        EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -21,8 +22,9 @@ public static class LookAtSomethingDrawer
     {
         GameObject obj = new GameObject("LookAtSomething");
         obj.AddComponent<LookAtSomething>();
+        EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -33,8 +35,9 @@ public static class RouteTrackDrawer
     {
         GameObject obj = new GameObject("RouteTrack");
         obj.AddComponent<RouteTrack>();
+        EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -46,8 +49,9 @@ public class RouteGeneratorDrawer : Editor
     {
         GameObject obj = new GameObject("RouteGenerator");
         obj.AddComponent<RouteGenerator>();
+        EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
     }
 
     public override void OnInspectorGUI()

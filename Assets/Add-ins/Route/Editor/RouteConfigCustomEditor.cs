@@ -6,10 +6,13 @@ using System.Collections;
 public class RouteConfigDrawer : Editor
 {
     [MenuItem("Route/Create Route Config")]
-    static void CreateRouteConfig()
+    static void Create()
     {
         GameObject obj = new GameObject("RouteConfig");
-        Select(obj.AddComponent<RouteConfig>());
+        obj.AddComponent<RouteConfig>();
+        EditorGUIUtility.PingObject(obj);
+        Selection.objects = new GameObject[] { obj };
+        //Select(obj.AddComponent<RouteConfig>());
     }
     public override void OnInspectorGUI()
     {
@@ -120,12 +123,14 @@ public class RouteConfigDrawer : Editor
 public class RouteLineDrawer : Editor
 {
     [MenuItem("Route/Extends/Create Route Line")]
-    static void CreateRouteConfig()
+    static void Create()
     {
         GameObject obj = new GameObject("RouteLine");
         obj.AddComponent<RouteLine>();
+        EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        //Selection.objects = new GameObject[] { obj };
+        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
     }
 
     public override void OnInspectorGUI()
@@ -223,7 +228,7 @@ public class RoutePointDrawer : Editor
         next = Handles.Slider(next, Vector3.forward, handlesize, Handles.ArrowCap, 1);
         Handles.color = kUpArrowColor;
         next = Handles.Slider(next, Vector3.up, handlesize, Handles.ArrowCap, 1);
-#else // UNITY_5 || NITY_2017
+#else // UNITY_5 || UNITY_2017
         Handles.color = kRightArrowColor;
         next = Handles.Slider(next, Vector3.right, handlesize, Handles.ArrowHandleCap, 1);
         Handles.color = kForwardArrowColor;
