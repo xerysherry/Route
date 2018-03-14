@@ -45,13 +45,13 @@ public class RouteController
             bezier_ = route_config_.GetBezier3D(current_);
         }
     }
-    /// <summary>
-    /// 重置移动
-    /// </summary>
-    public void ResetMove()
-    {
-        move_length_ = 0;
-    }
+    ///// <summary>
+    ///// 重置移动
+    ///// </summary>
+    //public void ResetMove()
+    //{
+    //    move_length_ = 0;
+    //}
     /// <summary>
     /// 清理数据
     /// </summary>
@@ -84,7 +84,7 @@ public class RouteController
             if(is_finish)
                 break;
             //进入下一路点
-            route_config_.SetCurrent(current + 1);
+            SetCurrent(current + 1);
 
             on_enter_point_(current_point);
             if(!string.IsNullOrEmpty(current_point.message))
@@ -136,7 +136,7 @@ public class RouteController
                 break;
             }
             //进入下一路点
-            route_config_.SetCurrent(current - 1);
+            SetCurrent(current - 1);
 
             on_enter_point_(current_point);
             if(!string.IsNullOrEmpty(current_point.message))
@@ -151,11 +151,11 @@ public class RouteController
             if(wait_time_ > keeptime)
             {
                 velocity = GetCurrenVelocity();
-                move_length_ = route_config.current_length - (wait_time_ - keeptime) * velocity;
+                move_length_ = current_length - (wait_time_ - keeptime) * velocity;
             }
             else
             {
-                move_length_ = route_config.current_length;
+                move_length_ = current_length;
                 break;
             }
         }
@@ -167,24 +167,52 @@ public class RouteController
         Apply(obj);
     }
 
+    public void SetMove(float length)
+    {
+        if(prev_total_length <= length && length <= curr_total_length)
+        {
+            move_length_ = length - prev_total_length;
+        }
+        else
+        {
+            Reset();
+            Step(length);
+        }
+    }
+
     public void Step(float delta_length)
     {
-        float velocity = GetCurrenVelocity();
-
         move_length_ += delta_length;
-        while(move_length_ > current_length)
+        while(move_length_ >= current_length)
         {
             move_length_ -= current_length;
-            on_enter_point_(current_point);
+#if UNITY_EDITOR
+            if(Application.isPlaying)
+                on_exit_point_(current_point);
+#else
+            on_exit_point_(current_point);
+#endif
             //是否完成
             if(is_finish)
                 break;
             //进入下一路点
             SetCurrent(current_ + 1);
 
+#if UNITY_EDITOR
+            if(Application.isPlaying)
+                on_enter_point_(current_point);
+#else
             on_enter_point_(current_point);
+#endif
             if(!string.IsNullOrEmpty(current_point.message))
+            {
+#if UNITY_EDITOR
+                if(Application.isPlaying)
+                    on_message_(current_point.message);
+#else
                 on_message_(current_point.message);
+#endif
+            }
         }
     }
 
@@ -193,7 +221,7 @@ public class RouteController
         on_exit_point_(current_point);
         if(!is_finish)
         {
-            route_config_.SetCurrent(current + 1);
+            SetCurrent(current + 1);
             wait_time_ = 0;
             move_length_ = 0;
 
@@ -334,25 +362,8 @@ public class RouteController
         }
     }
     
-    ///// <summary>
-    ///// 当前序号
-    ///// </summary>
-    //public int current { get { return route_config_.current; } }
-    ///// <summary>
-    ///// 当前路点
-    ///// </summary>
-    //public RoutePoint current_point { get { return route_config_.current_point; } }
-    ///// <summary>
-    ///// 加一个点
-    ///// </summary>
-    //public RoutePoint next_point { get { return route_config_.next_point; } }
-    ///// <summary>
-    ///// 当前长度
-    ///// </summary>
-    //public float current_length { get { return route_config_.current_length; } }
-
     /// <summary>
-    /// 当前路点
+    /// 当前路点序号
     /// </summary>
     public int current { get { return current_; } }
     int current_ = 0;
@@ -379,7 +390,75 @@ public class RouteController
 
     public RoutePoint current_point { get { return route_config_[current_]; } }
     public RoutePoint next_point { get { return route_config_[(current_ + 1) % route_config_.count]; } }
-    public float current_length { get { return route_config_.length[current_]; } }
+    public float current_length 
+    { 
+        get 
+        {
+            if(route_config_.IsLoop)
+            {
+                if(current < route_config_.count)
+                    return route_config_.length[current_];
+                return route_config_.length[current % route_config_.count];
+            }
+            else
+            {
+                if(current < route_config_.count - 1)
+                    return route_config_.length[current_];
+                return route_config_.length[route_config_.count - 2];
+            }
+            
+        } 
+    }
+
+    float curr_total_length
+    {
+        get
+        {
+            var list = total_length;
+            if(current_ < list.Length)
+                return list[current_];
+            return route_config_.total_length;
+        }
+    }
+    float prev_total_length 
+    {
+        get 
+        {
+            if(current_ > 0)
+                return total_length[current_ - 1];
+            return 0;
+        }
+    }
+    float[] total_length
+    {
+        get
+        {
+            if(route_config_ == null)
+            {
+                total_length_ = null;
+                config_length_ = null;
+                return null;
+            }
+            if(route_config_.length != config_length_)
+            {
+                total_length_ = null;
+                config_length_ = route_config_.length;
+            }
+            if(total_length_ == null)
+            {
+                float t = 0;
+                total_length_ = new float[route_config_.length.Length];
+                for(int i = 0; i < total_length_.Length; ++i)
+                {
+                    t += route_config_.length[i];
+                    total_length_[i] = t;
+                }
+            }
+            return total_length_;
+        }
+    }
+    float[] total_length_ = null;
+    float[] config_length_ = null;
 
     /// <summary>
     /// 是否完成

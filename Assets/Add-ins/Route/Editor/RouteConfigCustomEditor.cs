@@ -237,6 +237,9 @@ public class RoutePointDrawer : Editor
 
     Vector3 HandleDirection(Vector3 pos, Vector3 dir)
     {
+        if(dir == Vector3.zero)
+            return Vector3.zero;
+
 #if UNITY_4_6
         Handles.color = kDirectionArrowColor;
         return Handles.Slider(pos, dir, HandleUtility.GetHandleSize(pos), Handles.ArrowCap, 1);

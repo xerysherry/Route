@@ -19,28 +19,46 @@ public class RouteLine : MonoBehaviour
 	}
 	void Update () 
     {}
-    public void Remesh()
+    void Refresh()
     {
         if(route == null)
-            route = gameObject.GetComponent<RouteConfig>();
+        {
+            route = GetComponent<RouteConfig>();
+            if(route == null)
+            {
+                ctrler_ = null;
+                return;
+            }
+        }
+        if(ctrler_ == null)
+        {
+            ctrler_ = new RouteController();
+            ctrler_.SetRouteConfig(route);
+        }
+        else if(ctrler_.route_config != route)
+        {
+            ctrler_.SetRouteConfig(route);
+        }
+    }
+    public void Remesh()
+    {
+        Refresh();
         if(!route || route.count == 0)
         {
             filter.mesh = null;
             return;
         }
-        route.Refresh();
+#if UNITY_EDITOR
+        if(!Application.isPlaying)
+            route.Refresh();
+#endif
 
-        material.mainTexture = texture;
-        renderer.material = material;
+        mat.mainTexture = texture;
+        renderer.material = mat;
 
-        route.SetCurrent(0);
+        ctrler_.Reset();
 
-        float totallength = route.current_length;
-        while(!route.IsTail())
-        {
-            route.Next();
-            totallength += route.current_length;   
-        }
+        float totallength = route.total_length;
         var scount = (int)Mathf.Floor((totallength + interval) / (step + interval));
         if(scount == 0)
             return;
@@ -59,8 +77,7 @@ public class RouteLine : MonoBehaviour
         List<int> triangles = new List<int>(new int[(scount + 1) * 6]);
 
         int vi = 0;
-        float dist = 0, subdist = 0, nt = 0;
-        route.SetCurrent(0);
+        float dist = 0, subdist = 0;
 
         Vector3 pos = transform.position;
         Vector3 A0, A1, B0, B1;
@@ -70,9 +87,9 @@ public class RouteLine : MonoBehaviour
         {
             if(mode == Mode.TWIST)
             {
-                nt = route.GetNormalizedT(subdist);
-                pt = route.GetPoint(nt) - pos;
-                tangent = route.GetTangent(nt);
+                ctrler_.SetMove(subdist);
+                pt = ctrler_.GetPoint() - pos;
+                tangent = ctrler_.GetTangent();
                 GetABPoint(pt, tangent, out A0, out B0);
                 vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
 
@@ -80,46 +97,37 @@ public class RouteLine : MonoBehaviour
                 {
                     vertices[vi - 2] = vertices[vi - 4];
                     vertices[vi - 1] = vertices[vi - 3];
-                    uv[vi - 2] = uv[vi - 6];
-                    uv[vi - 1] = uv[vi - 5];
                 }
 
                 subdist += step;
-
-                while(subdist > route.current_length)
+                if(self_adjust)
                 {
-                    subdist -= route.current_length;
-                    if(route.IsTail())
-                        goto EXIT;
-                    route.Next();
+                    if(subdist > totallength)
+                        subdist = totallength;
                 }
+                else if(subdist > totallength)
+                    break;
 
-                nt = route.GetNormalizedT(subdist);
-                pt = route.GetPoint(nt) - pos;
-                tangent = route.GetTangent(nt);
+                ctrler_.SetMove(subdist);
+                pt = ctrler_.GetPoint() - pos;
+                tangent = ctrler_.GetTangent();
                 GetABPoint(pt, tangent, out A1, out B1);
                 vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
             }
             else
             {
                 subdist += step / 2;
-                while(subdist > route.current_length)
-                {
-                    subdist -= route.current_length;
-                    if(route.IsTail())
-                        goto EXIT;
-                    route.Next();
-                }
 
-                nt = route.GetNormalizedT(subdist);
-                pt = route.GetPoint(nt) - pos;
-                tangent = route.GetTangent(nt);
+                if(subdist > totallength)
+                    break;
+
+                ctrler_.SetMove(subdist);
+                pt = ctrler_.GetPoint() - pos;
+                tangent = ctrler_.GetTangent();
                 GetABPoint(pt, tangent, out A0, out B0);
 
                 tangent = tangent * step/2;
-                A0 = A0 - tangent;
-                B0 = B0 - tangent;
-                vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
+                vi = VerticesStart(A0 - tangent, B0 - tangent, vi, ref vertices, ref uv);
 
                 A1 = A0 + tangent;
                 B1 = B0 + tangent;
@@ -127,21 +135,11 @@ public class RouteLine : MonoBehaviour
 
                 subdist += step/2;
             }
-
             subdist += iv;
-            while(subdist > route.current_length)
-            {
-                subdist -= route.current_length;
-                if(route.IsTail())
-                    goto EXIT;
-                route.Next();
-            }
-
             if(vi >= vertices.Count)
                 break;
         } while((dist += step) < totallength);
 
-    EXIT:
         if(vi % 4 != 0)
         {
             vertices.RemoveRange(vi - 2, 4);
@@ -149,7 +147,7 @@ public class RouteLine : MonoBehaviour
             triangles.RemoveRange(vi / 4 * 6, 6);
         }
 
-        if(route.IsLoop && interval == 0.0f)
+        if(mode == Mode.TWIST && route.IsLoop && interval == 0.0f)
         {
             vertices[vertices.Count - 2] = vertices[0];
             vertices[vertices.Count - 1] = vertices[1];
@@ -179,6 +177,8 @@ public class RouteLine : MonoBehaviour
         var angle = RouteMath.GetPolarEular(tangent);
         var quat = Quaternion.AngleAxis(angle, RouteMath.kAxisY);
         var iquat = Quaternion.AngleAxis(angle + 180, RouteMath.kAxisY);
+
+        loc += position;
         if(eular == 0)
         {
             A = (quat * RouteMath.kAxisX) * width / 2 + loc;
@@ -199,11 +199,11 @@ public class RouteLine : MonoBehaviour
         vertices[index] = A;
         vertices[index + 1] = B;
 
-        uvoffset = (index / 2) % 2;
+        //uvoffset = (index / 2) % 2;
         uv[index] = kUVs[0];
         uv[index + 1] = kUVs[1];
 
-        if(flip)
+        if((flip & Flip.VERTICAL) != 0)
         {
             uv[index + 1] = kUVs[0];
             uv[index] = kUVs[1];
@@ -212,7 +212,7 @@ public class RouteLine : MonoBehaviour
         {
             uv[index] = kUVs[0];
             uv[index + 1] = kUVs[1];
-        }
+        }  
         return index + 2;
     }
 
@@ -223,16 +223,29 @@ public class RouteLine : MonoBehaviour
         vertices[index + 1] = B;
 
         var uvi = ((index / 2 + uvoffset) % 2) * 2;
-        if(flip)
+        if((flip & Flip.VERTICAL) != 0)
         {
-            uv[index + 1] = kUVs[uvi];
-            uv[index] = kUVs[uvi + 1];
+            uv[index + 1] = kUVs[2];
+            uv[index] = kUVs[3];
         }
         else
         {
-            uv[index] = kUVs[uvi];
-            uv[index + 1] = kUVs[uvi + 1];
+            uv[index] = kUVs[2];
+            uv[index + 1] = kUVs[3];
         }
+        if( //水平翻转
+            (flip & Flip.HORIZON) != 0 ||
+            //镜像模式
+            ((flip & Flip.MIRROR) != 0 && (index / 4) % 2 == 1))
+        {
+            var t = uv[index - 2];
+            uv[index - 2] = uv[index];
+            uv[index] = t;
+            t = uv[index - 1];
+            uv[index - 1] = uv[index + 1];
+            uv[index + 1] = t;
+        }
+
 
         var ti = ((index-2) / 4 ) * 6;
         triangles[ti] = index - 2;
@@ -245,6 +258,21 @@ public class RouteLine : MonoBehaviour
         return index + 2;
     }
 
+    /// <summary>
+    /// 路径配置（Null为空时，生成时会查询自身的RouteConfig组件)
+    /// </summary>
+    public RouteConfig route;
+    /// <summary>
+    /// 纹理
+    /// </summary>
+    public Texture texture;
+    /// <summary>
+    /// 材质（Null为空时，生成时会创建"Sprites/Default"材质）
+    /// </summary>
+    public Material material;
+    /// <summary>
+    /// 生成模式
+    /// </summary>
     public enum Mode
     {
         /// <summary>
@@ -261,13 +289,21 @@ public class RouteLine : MonoBehaviour
     /// </summary>
     public Mode mode;
     /// <summary>
-    /// 路径配置
+    /// 翻转模式
     /// </summary>
-    public RouteConfig route;
+    public enum Flip
+    {
+        NONE = 0,
+        HORIZON = 1 << 1,
+        VERTICAL = 1 << 2,
+        MIRROR = 1 << 3,
+        HORIZON_AND_VERTICAL = HORIZON | VERTICAL,
+        MIRROR_AND_VERTICAL = MIRROR | VERTICAL,
+    }
     /// <summary>
-    /// 直线纹理
+    /// 翻转
     /// </summary>
-    public Texture texture;
+    public Flip flip = Flip.NONE;
     /// <summary>
     /// 步长
     /// </summary>
@@ -281,20 +317,19 @@ public class RouteLine : MonoBehaviour
     /// </summary>
     public float interval = 0;
     /// <summary>
+    /// 附加偏移
+    /// </summary>
+    public Vector3 position = Vector3.zero;
+    /// <summary>
     /// 绕切线旋转角
     /// </summary>
     public float eular = 0;
-    /// <summary>
-    /// 翻转
-    /// </summary>
-    public bool flip = false;
     /// <summary>
     /// 自适应
     /// </summary>
     public bool self_adjust = true;
 
-    public float t = 0;
-
+    RouteController ctrler_;
     MeshFilter filter_;
     MeshFilter filter
     {
@@ -324,20 +359,17 @@ public class RouteLine : MonoBehaviour
             return renderer_;
         }
     }
-
-    Material material
+    Material mat
     {
         get
         {
-            if(!material_)
+            if(!material)
             {
-                material_ = new Material(Shader.Find("Sprites/Default"));
-                material_.color = Color.white;
+                material = new Material(Shader.Find("Sprites/Default"));
+                material.color = Color.white;
             }
-            return material_;
+            return material;
         }
     }
-    Material material_;
-
     int uvoffset = 0;
 }
