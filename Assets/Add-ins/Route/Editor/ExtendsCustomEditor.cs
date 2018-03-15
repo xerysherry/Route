@@ -11,7 +11,7 @@ public static class PlainAxesDrawer
         obj.AddComponent<PlainAxes>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -24,7 +24,7 @@ public static class LookAtSomethingDrawer
         obj.AddComponent<LookAtSomething>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -37,7 +37,7 @@ public static class RouteTrackDrawer
         obj.AddComponent<RouteTrack>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
 }
 
@@ -51,7 +51,7 @@ public class RouteGeneratorDrawer : Editor
         obj.AddComponent<RouteGenerator>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
 
     public override void OnInspectorGUI()

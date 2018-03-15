@@ -12,7 +12,7 @@ public class RouteConfigDrawer : Editor
         obj.AddComponent<RouteConfig>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //Select(obj.AddComponent<RouteConfig>());
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
     public override void OnInspectorGUI()
     {
@@ -129,8 +129,7 @@ public class RouteLineDrawer : Editor
         obj.AddComponent<RouteLine>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
-        //Selection.objects = new GameObject[] { obj };
-        //SceneView.currentDrawingSceneView.LookAt(obj.transform.position);
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
     }
 
     public override void OnInspectorGUI()
