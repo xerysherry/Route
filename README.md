@@ -12,3 +12,12 @@ Route Plugin For Unity / Unity 路径插件
 截图与展示
 --------
 
+![screenshot](https://raw.githubusercontent.com/xerysherry/Route/master/screenshot/screenshot.jpg)
+
+![sample1](https://raw.githubusercontent.com/xerysherry/Route/master/screenshot/sample1.gif)
+
+![sample2](https://raw.githubusercontent.com/xerysherry/Route/master/screenshot/sample2.gif)
+
+![sample3](https://raw.githubusercontent.com/xerysherry/Route/master/screenshot/sample3.gif)
+
+![sample4](https://raw.githubusercontent.com/xerysherry/Route/master/screenshot/sample4.gif)
