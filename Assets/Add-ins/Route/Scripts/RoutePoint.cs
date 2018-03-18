@@ -11,6 +11,9 @@ public class RoutePoint : MonoBehaviour
     {
         transform.eulerAngles = Vector3.zero;
         UpdateColorSet();
+
+        keeptime = Mathf.Max(0, keeptime);
+        velocity = Mathf.Max(0, velocity);
     }
 
     void UpdateColorSet()
@@ -47,7 +50,7 @@ public class RoutePoint : MonoBehaviour
         if(next_weight_point == Vector3.zero)
             return;
 
-        Quaternion rot = new Quaternion();
+        Quaternion rot = Quaternion.identity;
         RouteConfig config = GetConfig();
         if(config)
             rot = config.transform.rotation;

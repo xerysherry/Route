@@ -240,7 +240,7 @@ public class RouteConfig : MonoBehaviour
     /// <summary>
     /// 全局速度，在子节点速度未配置时有效。如果为0，表示无效
     /// </summary>
-    public float velocity;
+    public float velocity = 1;
     /// <summary>
     /// 是否为闭环
     /// </summary>

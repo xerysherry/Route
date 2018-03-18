@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 [AddComponentMenu("Route/Route Generator")]
-public class RouteGenerator : MonoBehaviour 
+public class RouteGenerator : RouteComponent
 {
     static void DestroyGameObject(GameObject obj)
     {
@@ -18,24 +19,7 @@ public class RouteGenerator : MonoBehaviour
 
     void Refresh()
     {
-        if(route == null)
-        {
-            route = GetComponent<RouteConfig>();
-            if(route == null)
-            {
-                ctrler_ = null;
-                return;
-            }
-        }
-        if(ctrler_ == null)
-        {
-            ctrler_ = new RouteController();
-            ctrler_.SetRouteConfig(route);
-        }
-        else if(ctrler_.route_config != route)
-        {
-            ctrler_.SetRouteConfig(route);
-        }
+        RefreshConfig();
     }
 
     void RefreshObjList()
@@ -69,7 +53,7 @@ public class RouteGenerator : MonoBehaviour
         }
 
         Refresh();
-        if(ctrler_ == null)
+        if(controller_ == null)
             return;
 
 #if UNITY_EDITOR
@@ -78,7 +62,7 @@ public class RouteGenerator : MonoBehaviour
 #endif
         RefreshObjList();
 
-        ctrler_.Reset();
+        controller_.Reset();
 
         if(step <= 0.000001f)
             step = 1;
@@ -103,29 +87,48 @@ public class RouteGenerator : MonoBehaviour
 
         var curr = 0.0f;
         var index = 0;
+        var sum_pos = Vector3.zero;
+        var sum_eular = Vector3.zero;
 
-        ctrler_.SetRotateEnable(rotation);
+        controller_.SetRotateEnable(rotation);
         do
         {
             var o = GetGameObject(index);
             if(o == null)
                 return;
 
-            if(curr > totallength)
-                curr = totallength;
+            if(indexnamed)
+                o.name = obj.name + "_" + index;
+            else
+                o.name = obj.name;
 
-            ctrler_.SetMove(curr);
-            ctrler_.Apply(o);
+            controller_.SetMove(curr);
+            controller_.Apply(o);
             if(!rotation)
                 o.transform.rotation = obj.transform.rotation;
             if(eular != Vector3.zero)
                 o.transform.rotation = o.transform.rotation * Quaternion.Euler(eular);
             if(position != Vector3.zero)
                 o.transform.position = o.transform.position + position;
+            if(add_position != Vector3.zero)
+            {
+                sum_pos += add_position;
+                o.transform.position = o.transform.position + sum_pos;
+            }
+            if(add_eular != Vector3.zero)
+            {
+                sum_eular += add_eular;
+                o.transform.rotation = o.transform.rotation * Quaternion.Euler(sum_eular);
+            }
 
-            index += 1;
+            if(on_generate != null)
+                on_generate(index, o);
+
             curr += delta;
-        }while(index < scount);
+            if(curr > totallength)
+                curr = totallength;
+            index += 1;
+        } while(index < scount);
 
         if(last_obj_list_ != null && index < last_obj_list_.Count)
         { 
@@ -151,11 +154,16 @@ public class RouteGenerator : MonoBehaviour
         obj_list_[index] = o;
         return o;
     }
+    public float total_length
+    {
+        get
+        {
+            if(route == null)
+                return 0;
+            return route.total_length;
+        }
+    }
 
-    /// <summary>
-    /// 路点配置
-    /// </summary>
-    public RouteConfig route;
     /// <summary>
     /// 生成对象
     /// </summary>
@@ -169,6 +177,14 @@ public class RouteGenerator : MonoBehaviour
     /// </summary>
     public bool rotation = true;
     /// <summary>
+    /// 序号名
+    /// </summary>
+    public bool indexnamed = true;
+    /// <summary>
+    /// 生成对象间隔
+    /// </summary>
+    public float step = 1;
+    /// <summary>
     /// 附加偏移
     /// </summary>
     public Vector3 position = Vector3.zero;
@@ -177,11 +193,18 @@ public class RouteGenerator : MonoBehaviour
     /// </summary>
     public Vector3 eular = Vector3.zero;
     /// <summary>
-    /// 生成对象间隔
+    /// 叠加偏移
     /// </summary>
-    public float step = 1;
+    public Vector3 add_position = Vector3.zero;
+    /// <summary>
+    /// 叠加旋转
+    /// </summary>
+    public Vector3 add_eular = Vector3.zero;
+    /// <summary>
+    /// 创建回掉
+    /// </summary>
+    public Action<int, GameObject> on_generate = null;
 
-    RouteController ctrler_;
     List<GameObject> obj_list_;
     List<GameObject> last_obj_list_;
 }

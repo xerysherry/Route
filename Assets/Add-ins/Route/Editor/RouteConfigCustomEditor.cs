@@ -9,10 +9,26 @@ public class RouteConfigDrawer : Editor
     static void Create()
     {
         GameObject obj = new GameObject("RouteConfig");
-        obj.AddComponent<RouteConfig>();
+        var config = obj.AddComponent<RouteConfig>();
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
         SceneView.lastActiveSceneView.LookAt(obj.transform.position);
+
+        var route = new GameObject("Route");
+        var point = route.AddComponent<RoutePoint>();
+        point.transform.parent = config.transform;
+        point.transform.position = Vector3.left * 2;
+        point.prev_weight_point = Vector3.left;
+        point.next_weight_point = Vector3.right;
+
+        route = new GameObject("Route");
+        point = route.AddComponent<RoutePoint>();
+        point.transform.parent = config.transform;
+        point.transform.position = Vector3.right * 2;
+        point.prev_weight_point = Vector3.left;
+        point.next_weight_point = Vector3.right;
+
+        config.Refresh();
     }
     public override void OnInspectorGUI()
     {
@@ -105,9 +121,9 @@ public class RouteConfigDrawer : Editor
             obj.transform.position = transform.position;
             obj.transform.rotation = transform.rotation;
 
-            point.message = lastpoint.message;
-            point.keeptime = lastpoint.keeptime;
-            point.velocity = lastpoint.velocity;
+            //point.message = lastpoint.message;
+            //point.keeptime = lastpoint.keeptime;
+            //point.velocity = lastpoint.velocity;
             point.prev_weight_point = lastpoint.prev_weight_point;
             point.next_weight_point = lastpoint.next_weight_point;
             point.color = lastpoint.color;
@@ -153,9 +169,19 @@ public class RoutePointDrawer : Editor
     public void OnSceneGUI()
     {
         RoutePoint point = target as RoutePoint;
-
+        var velocity = point.velocity;
+        if(velocity == 0)
+        {
+            var c = point.GetConfig();
+            if(c != null)
+                velocity = c.velocity;
+        }
+            
         Handles.color = Color.black;
-        Handles.Label(point.transform.position, point.name);
+        Handles.Label(point.transform.position,
+            point.name + "\n" +
+            "S:" + velocity + " " +
+            "W:" + point.keeptime);
 
         //是否显示操作杆
         if(!show_arrow_)
@@ -175,9 +201,9 @@ public class RoutePointDrawer : Editor
         }
 
         var old_next_weight_point = point.transform.position + rot * point.next_weight_point;
-        var next_weight_point = HandleCoordinate(old_next_weight_point, "next weight point");
+        var next_weight_point = HandleCoordinate(old_next_weight_point, "next");
         var old_prev_weight_point = point.transform.position + rot * point.prev_weight_point;
-        var prev_weight_point = HandleCoordinate(old_prev_weight_point, "prev weight point");
+        var prev_weight_point = HandleCoordinate(old_prev_weight_point, "prev");
 
         if(old_next_weight_point != next_weight_point)
         {
@@ -264,7 +290,7 @@ public class RoutePointDrawer : Editor
         {
             var c = point.GetConfig();
             if(c != null)
-                RouteConfigDrawer.Select(c);
+                Selection.objects = new GameObject[] { c.gameObject };
         }
         if(GUILayout.Button("Prev Route(下一个路点)"))
         {

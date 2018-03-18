@@ -28,7 +28,8 @@ public static class LookAtSomethingDrawer
     }
 }
 
-public static class RouteTrackDrawer
+[CustomEditor(typeof(RouteTrack))]
+public class RouteTrackDrawer : Editor
 {
     [MenuItem("Route/Extends/Create Route Track")]
     static void Create()
@@ -38,6 +39,19 @@ public static class RouteTrackDrawer
         EditorGUIUtility.PingObject(obj);
         Selection.objects = new GameObject[] { obj };
         SceneView.lastActiveSceneView.LookAt(obj.transform.position);
+    }
+
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+        var self = (target as RouteTrack);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Total Length(总长度):");
+        GUILayout.Label(self.total_length.ToString());
+        GUILayout.EndHorizontal();
+        if(GUILayout.Button("Refresh(刷新)"))
+            self.Refresh();
+        base.OnInspectorGUI();
     }
 }
 
@@ -58,11 +72,52 @@ public class RouteGeneratorDrawer : Editor
     {
         serializedObject.Update();
 
-        var g = (target as RouteGenerator);
-        if(GUILayout.Button("Build"))
-            g.Generate();
-        if(GUILayout.Button("Clear"))
-            g.Clear();
+        var self = (target as RouteGenerator);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Total Length(总长度):");
+        GUILayout.Label(self.total_length.ToString());
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Generate Count(生成数量):");
+        GUILayout.Label(((int)Mathf.Ceil(self.total_length / self.step)).ToString());
+        GUILayout.EndHorizontal();
+
+        if(GUILayout.Button("Build(生成对象)"))
+            self.Generate();
+        if(GUILayout.Button("Clear(清空对象)"))
+            self.Clear();
+        base.OnInspectorGUI();
+    }
+}
+
+[CustomEditor(typeof(RoutePlacement))]
+public class RoutePlacementDrawer : Editor
+{
+    [MenuItem("Route/Extends/Create Route Placement")]
+    static void Create()
+    {
+        GameObject obj = new GameObject("RoutePlacement");
+        obj.AddComponent<RoutePlacement>();
+        EditorGUIUtility.PingObject(obj);
+        Selection.objects = new GameObject[] { obj };
+        SceneView.lastActiveSceneView.LookAt(obj.transform.position);
+    }
+
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+
+        var self = (target as RoutePlacement);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Total Length(总长度):");
+        GUILayout.Label(self.total_length.ToString());
+        GUILayout.EndHorizontal();
+
+        if(GUILayout.Button("Refresh(刷新)"))
+            self.Refresh();
+        if(GUILayout.Button("Setup(放置)"))
+            self.Setup();
         base.OnInspectorGUI();
     }
 }

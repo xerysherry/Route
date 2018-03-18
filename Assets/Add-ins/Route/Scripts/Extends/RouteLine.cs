@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [AddComponentMenu("Route/Route Line")]
-public class RouteLine : MonoBehaviour 
+public class RouteLine : RouteComponent 
 {
     static readonly Vector2[] kUVs = new Vector2[]
     {
@@ -19,30 +19,9 @@ public class RouteLine : MonoBehaviour
 	}
 	void Update () 
     {}
-    void Refresh()
-    {
-        if(route == null)
-        {
-            route = GetComponent<RouteConfig>();
-            if(route == null)
-            {
-                ctrler_ = null;
-                return;
-            }
-        }
-        if(ctrler_ == null)
-        {
-            ctrler_ = new RouteController();
-            ctrler_.SetRouteConfig(route);
-        }
-        else if(ctrler_.route_config != route)
-        {
-            ctrler_.SetRouteConfig(route);
-        }
-    }
     public void Remesh()
     {
-        Refresh();
+        RefreshConfig();
         if(!route || route.count == 0)
         {
             filter.mesh = null;
@@ -56,7 +35,7 @@ public class RouteLine : MonoBehaviour
         mat.mainTexture = texture;
         renderer.material = mat;
 
-        ctrler_.Reset();
+        controller_.Reset();
 
         float totallength = route.total_length;
         var scount = (int)Mathf.Floor((totallength + interval) / (step + interval));
@@ -87,9 +66,9 @@ public class RouteLine : MonoBehaviour
         {
             if(mode == Mode.TWIST)
             {
-                ctrler_.SetMove(subdist);
-                pt = ctrler_.GetPoint() - pos;
-                tangent = ctrler_.GetTangent();
+                controller_.SetMove(subdist);
+                pt = controller_.GetPoint() - pos;
+                tangent = controller_.GetTangent();
                 GetABPoint(pt, tangent, out A0, out B0);
                 vi = VerticesStart(A0, B0, vi, ref vertices, ref uv);
 
@@ -108,9 +87,9 @@ public class RouteLine : MonoBehaviour
                 else if(subdist > totallength)
                     break;
 
-                ctrler_.SetMove(subdist);
-                pt = ctrler_.GetPoint() - pos;
-                tangent = ctrler_.GetTangent();
+                controller_.SetMove(subdist);
+                pt = controller_.GetPoint() - pos;
+                tangent = controller_.GetTangent();
                 GetABPoint(pt, tangent, out A1, out B1);
                 vi = VerticesNext(A1, B1, vi, ref vertices, ref uv, ref triangles);
             }
@@ -121,9 +100,9 @@ public class RouteLine : MonoBehaviour
                 if(subdist > totallength)
                     break;
 
-                ctrler_.SetMove(subdist);
-                pt = ctrler_.GetPoint() - pos;
-                tangent = ctrler_.GetTangent();
+                controller_.SetMove(subdist);
+                pt = controller_.GetPoint() - pos;
+                tangent = controller_.GetTangent();
                 GetABPoint(pt, tangent, out A0, out B0);
 
                 tangent = tangent * step/2;
@@ -258,10 +237,6 @@ public class RouteLine : MonoBehaviour
     }
 
     /// <summary>
-    /// 路径配置（Null为空时，生成时会查询自身的RouteConfig组件)
-    /// </summary>
-    public RouteConfig route;
-    /// <summary>
     /// 纹理
     /// </summary>
     public Texture texture;
@@ -328,7 +303,6 @@ public class RouteLine : MonoBehaviour
     /// </summary>
     public bool self_adjust = true;
 
-    RouteController ctrler_;
     MeshFilter filter_;
     MeshFilter filter
     {
