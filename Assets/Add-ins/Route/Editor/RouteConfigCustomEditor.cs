@@ -61,7 +61,7 @@ public class RouteConfigDrawer : Editor
 
     public void OnSceneGUI()
     {   
-        GUI.Window(1, new Rect(5, 20, 250, 170), DoGUI, "Route Config(路点配置窗口)");
+        GUI.Window(1, new Rect(5, 20, 250, 170), DoGUI, "Route Config(路径配置窗口)");
     }
 
     public static void Select(RoutePoint p)
@@ -308,7 +308,7 @@ public class RoutePointDrawer : Editor
 
         if(GUILayout.Button("Ping(在节点树高亮)"))
             EditorGUIUtility.PingObject(point);
-        if(GUILayout.Button("Back RouteConfig(返回路点配置)"))
+        if(GUILayout.Button("Back RouteConfig(返回路径配置)"))
         {
             var c = point.GetConfig();
             if(c != null)
