@@ -58,9 +58,11 @@ public class RouteTime : RouteComponent
             case Mode.FIXED_DELTA_TIME:
                 dt = Time.fixedDeltaTime;
                 break;
+#if UNITY_2017
             case Mode.FIXED_UNSCALED_DELTA_TIME:
                 dt = Time.fixedUnscaledDeltaTime;
                 break;
+#endif
             case Mode.CUSTOM_TIME:
                 dt = custom_delta;
                 break;
@@ -92,19 +94,21 @@ public class RouteTime : RouteComponent
         /// <summary>
         /// Time.deltaTime
         /// </summary>
-        DELTA_TIME,
+        DELTA_TIME = 1,
         /// <summary>
         /// Time.fixedDeltaTime
         /// </summary>
-        FIXED_DELTA_TIME,
+        FIXED_DELTA_TIME = 2,
+#if UNITY_2017
         /// <summary>
         /// Time.fixedUnscaledDeltaTime
         /// </summary>
-        FIXED_UNSCALED_DELTA_TIME,
+        FIXED_UNSCALED_DELTA_TIME = 3,
+#endif
         /// <summary>
         /// 自定义差量
         /// </summary>
-        CUSTOM_TIME,
+        CUSTOM_TIME = 4,
     }
     public Mode mode = Mode.DELTA_TIME;
     /// <summary>
