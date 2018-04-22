@@ -312,7 +312,7 @@ public class RouteConfig : MonoBehaviour
             }
             dist -= l;
         }
-        return GetNormalizedT(index, movelength);
+        return GetNormalized(index, movelength);
     }
 
     /// <summary>
@@ -397,7 +397,7 @@ public class RouteConfig : MonoBehaviour
     /// </summary>
     /// <param name="index">点索引</param>
     /// <param name="move">移动距离</param>
-    public float GetNormalizedT(int index, float move)
+    public float GetNormalized(int index, float move)
     {
         if(index < 0 ||
             index >= points_.Length ||

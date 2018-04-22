@@ -475,7 +475,7 @@ public class RouteController
         {
             if(last_move_length_ != move_length_)
             {
-                normalized_ = route_config_.GetNormalizedT(current_, move_length_);
+                normalized_ = route_config_.GetNormalized(current_, move_length_);
                 last_move_length_ = move_length_;
             }
             return normalized_;

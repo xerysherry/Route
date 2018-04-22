@@ -213,7 +213,7 @@ public class RoutePoint : MonoBehaviour
         kBroken,
     }
     [HideInInspector]
-    public WeightType weight_type_ = WeightType.kNormal;
+    public WeightType weight_type = WeightType.kNormal;
 
     [HideInInspector]
     [SerializeField]

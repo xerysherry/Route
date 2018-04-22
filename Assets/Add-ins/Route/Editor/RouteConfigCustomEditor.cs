@@ -230,14 +230,14 @@ public class RoutePointDrawer : Editor
         if(old_next_weight_point != next_weight_point)
         {
             point.next_weight_point = irot * (next_weight_point - point.transform.position);
-            if(point.weight_type_ == RoutePoint.WeightType.kNormal)
+            if(point.weight_type == RoutePoint.WeightType.kNormal)
                 point.prev_weight_point = -point.next_weight_point.normalized * point.prev_weight_point.magnitude;
             old_next_weight_point = next_weight_point;
         }
         if(old_prev_weight_point != prev_weight_point)
         {
             point.prev_weight_point = irot * (prev_weight_point - point.transform.position);
-            if(point.weight_type_ == RoutePoint.WeightType.kNormal)
+            if(point.weight_type == RoutePoint.WeightType.kNormal)
                 point.next_weight_point = -point.prev_weight_point.normalized * point.next_weight_point.magnitude;
             old_prev_weight_point = prev_weight_point;
         }
@@ -354,15 +354,15 @@ public class RoutePointDrawer : Editor
         if(!show_arrow_)
             return;
 
-        switch(point.weight_type_)
+        switch(point.weight_type)
         {
         case RoutePoint.WeightType.kNormal:
             if(GUILayout.Button("Normal(正常模式)"))
-                point.weight_type_ = RoutePoint.WeightType.kBroken;
+                point.weight_type = RoutePoint.WeightType.kBroken;
             break;
         case RoutePoint.WeightType.kBroken:
             if(GUILayout.Button("Broken(断开模式)"))
-                point.weight_type_ = RoutePoint.WeightType.kNormal;
+                point.weight_type = RoutePoint.WeightType.kNormal;
             break;
         }
 
